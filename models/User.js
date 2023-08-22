@@ -1,24 +1,26 @@
 const mongoose = require("mongoose");
+const bcrypt = require('bcrypt');
+
 
 const schema = new mongoose.Schema({
     name: {
         type: String
     },
-    username:{
+    username: {
         type: String,
         unique: true
     },
-    email:{
+    email: {
         type: String,
         unique: true
-    }, 
-    password:{
+    },
+    password: {
         type: String
     },
     photo: {
         type: String
     },
-    googleId:{
+    googleId: {
         type: String,
         unique: true
     },
@@ -30,6 +32,19 @@ const schema = new mongoose.Schema({
 },
 {
     timestamps: true
-})
+});
+
+schema.pre('save', async function(next){
+    if (!this.isModified("password")) return next();
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
+});
+
+schema.pre('save', async function(next){
+    if (!this.photo) {
+        this.photo = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.name)}`;
+    }
+    next();
+});
 
 module.exports = mongoose.model("User", schema);

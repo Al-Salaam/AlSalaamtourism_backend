@@ -1,7 +1,8 @@
 const { Strategy: GoogleStrategy } = require('passport-google-oauth20');
-
+const LocalStrategy = require('passport-local').Strategy; 
 const passport = require("passport");
 const User = require('../models/User');
+const bcrypt = require('bcrypt'); 
 
 exports.connectPassport = () => {
     passport.use(new GoogleStrategy({
@@ -16,13 +17,10 @@ exports.connectPassport = () => {
         })
 
         if(!user){
-            const email = (profile.emails && profile.emails.length > 0) ? profile.emails[0].value : null;
-            const username = profile.username;
+           
             const newUser = await User.create({
                 googleId: profile.id,
                 name: profile.displayName,
-                username: username, // Store the extracted username
-                email: email,
                 photo: profile.photos[0]?.value || null,
                 
             })
@@ -35,6 +33,33 @@ exports.connectPassport = () => {
 
     }));
 
+
+    //local strategy
+     // Local Strategy Configuration
+     passport.use(
+        new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
+            try {
+                const user = await User.findOne({ email });
+
+                if (!user) {
+                    return done(null, false, { message: 'Email not registered' });
+                }
+
+                const isPasswordValid = await bcrypt.compare(password, user.password);
+
+                if (!isPasswordValid) {
+                    return done(null, false, { message: 'Incorrect password' });
+                }
+
+                return done(null, user);
+            } catch (error) {
+                return done(error);
+            }
+        })
+    );
+
+
+
  passport.serializeUser((user, done) => {
     done(null, user.id)
  })
@@ -46,4 +71,6 @@ exports.connectPassport = () => {
  })
 
 }
+
+
 

@@ -6,6 +6,7 @@ const user = require("./routers/user");
 const { connectPassport } = require('./utils/Provider');
 const session = require('express-session');
 const passport = require('passport');
+const cookieParser = require('cookie-parser');
 const  app = express();
 
 dotenv.config({
@@ -17,6 +18,8 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 }));
+
+app.use(cookieParser());
 
 app.use(passport.authenticate('session'));
 app.use(passport.initialize());
