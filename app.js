@@ -3,6 +3,7 @@ const dotenv = require("dotenv");
 const morgan = require('morgan');
 const ErrorMiddleware = require('./middlewares/Error');
 const user = require("./routers/user");
+const activity = require('./routers/activity');
 const { connectPassport } = require('./utils/Provider');
 const session = require('express-session');
 const passport = require('passport');
@@ -32,6 +33,7 @@ app.use(express.urlencoded({extended : true}));
 app.use(morgan('tiny'));
 
 app.use('/api/v1', user);
+app.use('/api/v1', activity);
 
 module.exports = app;
 
