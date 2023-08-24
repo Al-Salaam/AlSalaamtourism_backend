@@ -28,6 +28,10 @@ const schema = new mongoose.Schema({
         type: String,
         enum: ["admin", "user"],
         default: "user"
+    },
+    wishlist: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'Wishlist'
     }
 },
 {

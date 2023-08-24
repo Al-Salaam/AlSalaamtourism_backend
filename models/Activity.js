@@ -1,82 +1,82 @@
 const mongoose = require('mongoose');
 
 const schema = new mongoose.Schema({
-    name:{
+    name: {
         type: String
     },
-    shortdescription:{
+    shortdescription: {
         type: String
     },
-    price:{
+    price: {
         type: Number
     },
-    ratings:{
+    ratings: {
         type: Number
     },
-    description:{
+    description: {
         type: String
     },
-    keyinstructions:{
+    keyinstructions: {
         type: String
     },
-    reservationpolicy:{
+    reservationpolicy: {
         type: String
     },
-    benifits:{
+    benifits: {
         type: String
     },
-    duration:{
-        type:String
-    },
-    cancellation:{
-        type:String
-    },
-    groupsize:{
+    duration: {
         type: String
     },
-    languages:{
+    cancellation: {
         type: String
     },
-    highlights:[String],
-    included:[String],
-    excluded:[String],
-    categorey:{
-        type:String,
-        enum:['activity','tour']
+    groupsize: {
+        type: String
     },
-    images:[{
-        public_id:{
-            type:String
+    languages: {
+        type: String
+    },
+    highlights: [String],
+    included: [String],
+    excluded: [String],
+    categorey: {
+        type: String,
+        enum: ['activity', 'tour']
+    },
+    images: [{
+        public_id: {
+            type: String
         },
-        url:{
-            type:String
+        url: {
+            type: String
         }
     }]
-    , 
-    reviews:[
+    ,
+    reviews: [
         {
-            user:{
+            user: {
                 type: mongoose.Schema.ObjectId,
                 ref: 'User'
             },
-            name:{
+            name: {
                 type: String
             },
-            rating:{
+            rating: {
                 type: Number
             },
-            comment:{
-                type:String
+            comment: {
+                type: String
             }
         }
     ],
-    noOfReviews:{
+    noOfReviews: {
         type: Number,
         default: 0
     }
 
 
-},{
+}, {
     timestamps: true
 })
 

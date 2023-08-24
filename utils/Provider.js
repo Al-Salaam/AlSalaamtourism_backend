@@ -19,7 +19,7 @@ exports.connectPassport = () => {
         if(!user){
            
             const newUser = await User.create({
-                googleId: profile.id,
+                googleId: profile.id || null, // Set googleId only if provided
                 name: profile.displayName,
                 photo: profile.photos[0]?.value || null,
                 

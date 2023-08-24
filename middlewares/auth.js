@@ -8,3 +8,17 @@ exports.isAuthenticated = (req, res, next) => {
     }
     next();
 }
+
+exports.authorizeRole = (authorizedRoles) => {
+    return (req, res, next) => {
+        if (!req.user) {
+            return next(new ErrorHandler("Not logged in", 401));
+        }
+
+        if (!authorizedRoles.includes(req.user.role)) {
+            return next(new ErrorHandler("Unauthorized", 403));
+        }
+
+        next();
+    };
+};

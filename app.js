@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const ErrorMiddleware = require('./middlewares/Error');
 const user = require("./routers/user");
 const activity = require('./routers/activity');
+const wishlist = require("./routers/wishlist")
 const { connectPassport } = require('./utils/Provider');
 const session = require('express-session');
 const passport = require('passport');
@@ -34,7 +35,7 @@ app.use(morgan('tiny'));
 
 app.use('/api/v1', user);
 app.use('/api/v1', activity);
-
+app.use('/api/v1', wishlist);
 module.exports = app;
 
 app.use(ErrorMiddleware);
