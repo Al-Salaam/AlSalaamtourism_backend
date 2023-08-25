@@ -2,7 +2,7 @@ const express = require('express');
 const { createActivity, getAllActivities, getActivityById, updateActivityById, deleteActivityById, createActivityReview, getAllRevirews, deleteActivityReview } = require('../controllers/activity');
 const { isAuthenticated, authorizeRole } = require('../middlewares/auth');
 const multipleUpload = require('../middlewares/multer');
-const { addToWishList } = require('../controllers/wishlist');
+const { addToWishList, removeFromWishlist } = require('../controllers/wishlist');
 
 const router = express.Router();
 
@@ -24,4 +24,6 @@ router.route('/activity/:activityId/reviews/:reviewId')
 
 router.route('/activities/:id/add-to-wishlist')
 .post(isAuthenticated, addToWishList);
+router.route('/activities/:id/remove-to-wishlist')
+.delete(isAuthenticated, removeFromWishlist)
 module.exports = router;

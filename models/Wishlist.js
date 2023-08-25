@@ -9,6 +9,10 @@ const wishlistSchema = new mongoose.Schema({
     activities: [{
         type: mongoose.Schema.ObjectId,
         ref: 'Activity'
+    }],
+    packages:[{
+        type: mongoose.Schema.ObjectId,
+        ref: 'Pakage'
     }]
 });
 
