@@ -5,6 +5,7 @@ const ErrorMiddleware = require('./middlewares/Error');
 const user = require("./routers/user");
 const activity = require('./routers/activity');
 const pakage = require('./routers/pakage');
+const inquiry = require('./routers/inquiry')
 const wishlist = require("./routers/wishlist")
 const { connectPassport } = require('./utils/Provider');
 const session = require('express-session');
@@ -17,10 +18,14 @@ dotenv.config({
 });
 
 app.use(session({
-    secret:process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 15 * 24 * 60 * 60 * 1000, // Set the session to expire after 15 days (in milliseconds)
+    },
 }));
+
 
 app.use(cookieParser());
 
@@ -38,6 +43,7 @@ app.use('/api/v1', user);
 app.use('/api/v1', activity);
 app.use('/api/v1', pakage);
 app.use('/api/v1', wishlist);
+app.use('/api/v1', inquiry)
 module.exports = app;
 
 app.use(ErrorMiddleware);

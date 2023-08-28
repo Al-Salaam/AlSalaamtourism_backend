@@ -9,6 +9,17 @@ exports.isAuthenticated = (req, res, next) => {
     next();
 }
 
+// const isAuthenticated = (req, res, next) => {
+//     if (req.isAuthenticated()) {
+//         return next();
+//     }
+//     // Redirect or send an error response if not authenticated
+//     res.status(401).json({
+//         success: false,
+//         message: 'Not authenticated'
+//     });
+// };
+
 exports.authorizeRole = (authorizedRoles) => {
     return (req, res, next) => {
         if (!req.user) {

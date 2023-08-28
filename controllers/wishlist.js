@@ -1,121 +1,95 @@
 const { catchAsyncError } = require("../middlewares/catchAsyncError");
+const Activity = require("../models/Activity");
+const Pakage = require("../models/Pakage");
 const Wishlist = require("../models/Wishlist");
 const ErrorHandler = require("../utils/errorHandler");
-exports.addToWishList = catchAsyncError(async (req, res, next) => {
-    const userId = req.user._id;
-    const activityId = req.params.id; // Corrected line
 
-    let wishlist = await Wishlist.findOne({ user: userId });
+
+exports.addToWishlist = catchAsyncError(async (req, res, next) => {
+    const { itemId, itemType } = req.body;
+    const userId = req.user._id;
+    const wishlist = await Wishlist.findOne({ user: userId });
+
     if (!wishlist) {
-        wishlist = await Wishlist.create({ user: userId });
+        return next(new ErrorHandler("wishlist not found for the user", 404));
     }
-    wishlist.activities.push(activityId); // Corrected line
+
+    let itemToAdd;
+    if (itemType === 'activity') {
+        itemToAdd = await Activity.findById(itemId);
+    } else if (itemType === 'package') {
+        itemToAdd = await Pakage.findById(itemId);
+    }
+
+    if (!itemToAdd) {
+        return next(new ErrorHandler("items not found", 404));
+    }
+
+    // Check if the item is already in the wishlist
+    const itemExists = wishlist.activities.includes(itemToAdd._id) ||
+        wishlist.packages.includes(itemToAdd._id);
+    if (itemExists) {
+        return next(new ErrorHandler("item already exits in the wistlist", 400));
+    }
+
+    // Add the item to the appropriate list (activities or packages)
+    if (itemType === 'activity') {
+        wishlist.activities.push(itemToAdd._id);
+    } else if (itemType === 'package') {
+        wishlist.packages.push(itemToAdd._id);
+    }
+
     await wishlist.save();
 
-    res.status(201).json({
-        success: true,
-        message: 'Successfully added to wishlist'
-    });
+    res.status(200).json({ message: 'Item added to wishlist successfully' });
 });
-
-exports.addToWhislistPakage = catchAsyncError(async( req, res, next) => {
-    const userId = req.user._id;
-    const pakageId = req.params.id;
-    let wishlist = await Wishlist.findOne({ user: userId });
-    if (!wishlist) {
-        wishlist = await Wishlist.create({ user: userId });
-    }
-    wishlist.packages.push(pakageId);
-    res.status(200).json({
-        success: true,
-        message:'Successfully added to wishlsit'
-    })
-})
-
-// exports.addToWishlist = catchAsyncError(async (req, res, next) => {
-//     const userId = req.user._id;
-//     const itemId = req.params.id; // Activity or Pakage ID
-
-//     let wishlist = await Wishlist.findOne({ user: userId });
-//     if (!wishlist) {
-//         wishlist = await Wishlist.create({ user: userId });
-//     }
-
-//     if (req.baseUrl.includes('activities')) {
-//         wishlist.activities.push(itemId);
-//     } else if (req.baseUrl.includes('pakages')) {
-//         wishlist.packages.push(itemId);
-//     }
-
-//     await wishlist.save();
-
-//     res.status(201).json({
-//         success: true,
-//         message: 'Successfully added to wishlist'
-//     });
-// });
 
 
 exports.getWishlist = catchAsyncError(async (req, res, next) => {
-    const userId = req.user._id; // Assuming you have user information in req.user
-    const wishlist = await Wishlist.findOne({ user: userId })
-        .populate('activities', 'name shortdescription price');
+    const userId = req.user._id; // Assuming you're using req.user to get the authenticated user's ID
 
+    // Find the wishlist for the user
+    const wishlist = await Wishlist.findOne({ user: userId }).populate('activities packages');
+
+    if (!wishlist) {
+        return res.status(404).json({
+            success: false,
+            message: 'Wishlist not found'
+        });
+    }
+
+    // Send the wishlist data back as a response
     res.status(200).json({
-        status: 'success',
-        data: {
-            wishlist
-        }
+        success: true,
+        wishlist
     });
 });
 
-// exports.removeFromWishlist = catchAsyncError(async (req, res, next) => {
-//     const userId = req.user._id;
-//     const itemId = req.params.id; // Activity or Pakage ID
 
-//     let wishlist = await Wishlist.findOne({ user: userId });
-//     if (!wishlist) {
-//         return res.status(404).json({
-//             status: 'error',
-//             message: 'Wishlist not found'
-//         });
-//     }
 
-//     if (req.baseUrl.includes('activities')) {
-//         const indexToRemove = wishlist.activities.indexOf(itemId);
-//         if (indexToRemove !== -1) {
-//             wishlist.activities.splice(indexToRemove, 1);
-//             await wishlist.save();
-//         }
-//     } else if (req.baseUrl.includes('pakages')) {
-//         const indexToRemove = wishlist.packages.indexOf(itemId);
-//         if (indexToRemove !== -1) {
-//             wishlist.packages.splice(indexToRemove, 1);
-//             await wishlist.save();
-//         }
-//     }
-
-//     res.status(200).json({
-//         status: 'success',
-//         message: 'Item removed from wishlist'
-//     });
-// });
-
-exports.removeFromWishlist = catchAsyncError(async(req, res, next) => {
+exports.removeFromWishlist = catchAsyncError(async (req, res, next) => {
+    const { itemId, itemType } = req.body;
     const userId = req.user._id;
-    const activityId = req.params.id;
+    
+    const wishlist = await Wishlist.findOne({ user: userId });
 
-    const wishlist = await Wishlist.findOne({user: userId});
-    if(!wishlist){
-        return next(new ErrorHandler('wishlist not found', 404))
+    if (!wishlist) {
+        return next(new ErrorHandler("wishlist not found for the user", 404));
     }
-    const indexToRemove = wishlist.activities.indexOf(activityId);
-    if(indexToRemove !== -1){
-        wishlist.activities.splice(indexToRemove,1);
-        await wishlist.save()
+
+    let itemToRemove;
+    if (itemType === 'activity') {
+        itemToRemove = itemId;
+        wishlist.activities.pull(itemToRemove);
+    } else if (itemType === 'package') {
+        itemToRemove = itemId;
+        wishlist.packages.pull(itemToRemove);
+    } else {
+        return next(new ErrorHandler("Invalid type item", 400));
     }
-    res.status(200).json({
-        success: true,
-        message: 'Activity Removed from wishlist'
-    })
+
+    await wishlist.save();
+
+    res.status(200).json({ message: 'Item removed from wishlist successfully' });
+
 })

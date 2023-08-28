@@ -22,8 +22,4 @@ router.route('/activity/:activityId/reviews')
 router.route('/activity/:activityId/reviews/:reviewId')
 .delete(isAuthenticated, deleteActivityReview);
 
-router.route('/activities/:id/add-to-wishlist')
-.post(isAuthenticated, addToWishList);
-router.route('/activities/:id/remove-to-wishlist')
-.delete(isAuthenticated, removeFromWishlist)
 module.exports = router;
