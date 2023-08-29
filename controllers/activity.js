@@ -38,7 +38,20 @@ exports.createActivity = catchAsyncError(async (req, res, next) => {
 
 
 exports.getAllActivities = catchAsyncError(async (req, res, next) => {
-    const activities = await Activity.find();
+    const keyword = req.query.keyword;
+    let activities;
+
+    if (!keyword) {
+        activities = await Activity.find();
+    } else {
+        activities = await Activity.find({
+            $or: [
+                { name: { $regex: keyword, $options: 'i' } },
+                { shortdescription: { $regex: keyword, $options: 'i' } },
+                { description: { $regex: keyword, $options: 'i' } }
+            ]
+        });
+    }
 
     res.status(200).json({
         status: 'success',
@@ -47,6 +60,8 @@ exports.getAllActivities = catchAsyncError(async (req, res, next) => {
         }
     });
 });
+
+
 
 
 exports.getActivityById = catchAsyncError(async (req, res, next) => {
@@ -68,7 +83,7 @@ exports.getActivityById = catchAsyncError(async (req, res, next) => {
 exports.updateActivityById = catchAsyncError(async (req, res, next) => {
     const activityId = req.params.id;
     const {
-        name, shortdescription, price, rating, description, keyinstructions, reservationpolicy, benifits,
+        name, shortdescription, price,  description, keyinstructions, reservationpolicy, benifits,
         duration, cancellation, groupsize, languages, highlights, included, excluded, categorey
     } = req.body;
 
@@ -93,7 +108,6 @@ exports.updateActivityById = catchAsyncError(async (req, res, next) => {
     existingActivity.name = name;
     existingActivity.shortdescription = shortdescription;
     existingActivity.price = price;
-    existingActivity.ratings = ratings;
     existingActivity.description = description;
     existingActivity.keyinstructions = keyinstructions;
     existingActivity.reservationpolicy = reservationpolicy;
@@ -127,9 +141,10 @@ exports.updateActivityById = catchAsyncError(async (req, res, next) => {
 exports.deleteActivityById = catchAsyncError(async (req, res, next) => {
     const activityId = req.params.id;
 
-    // Check if the activity exists
-    const existingActivity = await Activity.findById(activityId);
-    if (!existingActivity) {
+    // Find and delete the activity by ID
+    const deletedActivity = await Activity.findOneAndDelete({ _id: activityId });
+
+    if (!deletedActivity) {
         return res.status(404).json({
             status: 'error',
             message: 'Activity not found'
@@ -137,15 +152,12 @@ exports.deleteActivityById = catchAsyncError(async (req, res, next) => {
     }
 
     // Delete images from Cloudinary
-    const imagePublicIds = existingActivity.images.map(image => image.public_id);
+    const imagePublicIds = deletedActivity.images.map(image => image.public_id);
     if (imagePublicIds.length > 0) {
         await Promise.all(imagePublicIds.map(async (publicId) => {
             await cloudinary.v2.uploader.destroy(publicId);
         }));
     }
-
-    // Delete the activity from the database
-    await existingActivity.deleteOne();
 
     res.status(204).json({
         status: 'success',

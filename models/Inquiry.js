@@ -57,6 +57,11 @@ const schema = new mongoose.Schema({
         ref: 'User',
 
     },
+    status:{
+        type: String,
+        enum:['pending', 'complete'],
+        default:'pending'
+    }
 }, {
     timestamps: true
 });
