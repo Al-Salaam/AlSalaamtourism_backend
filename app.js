@@ -5,8 +5,9 @@ const ErrorMiddleware = require('./middlewares/Error');
 const user = require("./routers/user");
 const activity = require('./routers/activity');
 const pakage = require('./routers/pakage');
-const inquiry = require('./routers/inquiry')
-const wishlist = require("./routers/wishlist")
+const inquiry = require('./routers/inquiry');
+const wishlist = require("./routers/wishlist");
+const booking = require('./routers/booking')
 const { connectPassport } = require('./utils/Provider');
 const session = require('express-session');
 const passport = require('passport');
@@ -43,7 +44,8 @@ app.use('/api/v1', user);
 app.use('/api/v1', activity);
 app.use('/api/v1', pakage);
 app.use('/api/v1', wishlist);
-app.use('/api/v1', inquiry)
+app.use('/api/v1', inquiry);
+app.use('/api/v1', booking)
 module.exports = app;
 
 app.use(ErrorMiddleware);

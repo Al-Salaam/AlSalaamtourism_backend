@@ -35,6 +35,9 @@ const bookingSchema = new mongoose.Schema({
         type: String,
         enum: ['pending', 'completed'],
         default: 'pending'
+    },
+    paymentIntentId: { // New field to store Stripe Payment Intent ID
+        type: String
     }
 },
 {
