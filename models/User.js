@@ -32,7 +32,8 @@ const schema = new mongoose.Schema({
     wishlist: {
         type: mongoose.Schema.ObjectId,
         ref: 'Wishlist'
-    }
+    },
+    
 },
 {
     timestamps: true
