@@ -73,8 +73,11 @@ const schema = new mongoose.Schema({
     noOfReviews: {
         type: Number,
         default: 0
+    },
+    itemType:{
+        type: String,
+        default: "activity"
     }
-
 
 }, {
     timestamps: true

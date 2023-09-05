@@ -33,6 +33,25 @@ const schema = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: 'Wishlist'
     },
+    homeairport : {
+        type: String
+    },
+    address:{
+        type: String
+    },
+    city:{
+      type: String
+    },
+    state:{
+        type: String
+    },
+    zipcode:{
+        type: Number
+    },
+    country:{
+        type:String
+    }
+
     
 },
 {
@@ -51,5 +70,7 @@ schema.pre('save', async function(next){
     }
     next();
 });
+
+
 
 module.exports = mongoose.model("User", schema);

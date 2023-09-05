@@ -1,7 +1,7 @@
 const express = require('express');
 
 const passport = require("passport");
-const { getMyProfile, logout, registeration, login, adminLogin, getAllUsers, changePassword } = require('../controllers/user');
+const { getMyProfile, logout, registeration, login, adminLogin, getAllUsers, changePassword, addLocationInformation } = require('../controllers/user');
 const { isAuthenticated, authorizeRole } = require('../middlewares/auth');
 
 const router = express.Router();
@@ -19,8 +19,9 @@ router.get("/auth/google/callback", passport.authenticate("google", {
 }))
 
 router.route('/me').get(isAuthenticated, getMyProfile);
+router.route('/addlocation').put(isAuthenticated, addLocationInformation);
 router.route('/admin/users').get(isAuthenticated, authorizeRole('admin'), getAllUsers);
-// router.route('/auth/change-password').put(isAuthenticated, changePassword);
+// router.route('/auth/change-password').post(isAuthenticated, changePassword);
 router.route('/logout').get(logout);
 
 module.exports = router;
