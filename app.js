@@ -11,6 +11,7 @@ const booking = require('./routers/booking')
 const { connectPassport } = require('./utils/Provider');
 const session = require('express-session');
 const passport = require('passport');
+const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const  app = express();
 
@@ -36,9 +37,17 @@ app.use(passport.session());
 
 connectPassport();
 
+
 app.use(express.json());
 app.use(express.urlencoded({extended : true}));
 app.use(morgan('tiny'));
+
+app.use(cors({ // Enable CORS and specify the allowed frontend URL
+    origin: process.env.FRONTEND_URL, // Replace with your frontend URL
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // Enable credentials (cookies, authorization headers)
+}));
+
 
 app.use('/api/v1', user);
 app.use('/api/v1', activity);
