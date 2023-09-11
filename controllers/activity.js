@@ -130,6 +130,7 @@ exports.updateActivityById = catchAsyncError(async (req, res, next) => {
 
     res.status(200).json({
         status: 'success',
+        message: "Updated Successfully",
         data: {
             activity: updatedActivity
         }
@@ -161,7 +162,7 @@ exports.deleteActivityById = catchAsyncError(async (req, res, next) => {
 
     res.status(204).json({
         status: 'success',
-        data: null
+        message: "SuccessFully Deleted"
     });
 });
 

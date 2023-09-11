@@ -50,7 +50,8 @@ exports.adminLogin = (req, res, next) => {
         }
 
         if (!user) {
-            return next(new ErrorHandler(info.message, 401));
+            // Handle incorrect credentials here
+            return next(new ErrorHandler("Invalid credentials", 401))
         }
 
         // Check if the user is an admin
@@ -65,7 +66,7 @@ exports.adminLogin = (req, res, next) => {
             });
         } else {
             // If the user is not an admin, deny access
-            return next(new ErrorHandler('Only admins can log in.', 401));
+            return next(new ErrorHandler("Only admin can login", 401))
         }
     })(req, res, next);
 };
