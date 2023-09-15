@@ -29,11 +29,11 @@ exports.createBooking = catchAsyncError(async (req, res, next) => {
         }
 
         // Create a Stripe Payment Intent
-        const paymentIntent = await stripe.paymentIntents.create({
-            amount: totalAmount * 100, // Stripe expects amount in cents
-            currency: 'usd', // Change to your desired currency
-            description: 'Booking payment',
-        });
+        // const paymentIntent = await stripe.paymentIntents.create({
+        //     amount: totalAmount * 100, // Stripe expects amount in cents
+        //     currency: 'usd', // Change to your desired currency
+        //     description: 'Booking payment',
+        // });
 
         // Create the booking in your database
         const booking = await Booking.create({
@@ -45,14 +45,14 @@ exports.createBooking = catchAsyncError(async (req, res, next) => {
             infants,
             totalAmount,
             paymentStatus,
-            paymentIntentId: paymentIntent.id, // Save Stripe Payment Intent ID
+            // paymentIntentId: paymentIntent.id, // Save Stripe Payment Intent ID
         });
 
         res.status(201).json({
             status: 'success',
             data: {
                 booking,
-                clientSecret: paymentIntent.client_secret, // Pass this to the frontend
+                // clientSecret: paymentIntent.client_secret, // Pass this to the frontend
             }
         });
    
@@ -146,6 +146,14 @@ exports.getAllBookingsForUser = catchAsyncError(async (req, res, next) => {
     });
 });
 
+exports.getAllbookingsforAdmin = catchAsyncError(async (req, res, next) => {
+    const bookings = await Booking.find().populate('activity').populate('user');
+    res.status(200).json({
+        success: true,
+        data: bookings
+    })
+})
+
 exports.updateBookingStatus = catchAsyncError(async (req, res, next) => {
     const bookingId = req.params.id;
     const { paymentStatus } = req.body;
@@ -208,8 +216,8 @@ exports.deleteBooking = catchAsyncError(async (req, res, next) => {
         });
     }
 
-    res.status(204).json({
+    res.status(200).json({
         status: 'success',
-        data: null
+        message: 'Deleted Successfully'
     });
 });

@@ -160,7 +160,7 @@ exports.deleteActivityById = catchAsyncError(async (req, res, next) => {
         }));
     }
 
-    res.status(204).json({
+    res.status(200).json({
         status: 'success',
         message: "SuccessFully Deleted"
     });

@@ -34,9 +34,9 @@ const schema = new mongoose.Schema({
     groupsize: {
         type: String
     },
-    languages: {
-        type: String
-    },
+    languages: [
+         String
+    ],
     highlights: [String],
     included: [String],
     excluded: [String],
