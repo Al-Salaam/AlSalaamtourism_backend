@@ -154,12 +154,37 @@ exports.getAllbookingsforAdmin = catchAsyncError(async (req, res, next) => {
     })
 })
 
+// exports.updateBookingStatus = catchAsyncError(async (req, res, next) => {
+//     const bookingId = req.params.id;
+//     const { paymentStatus } = req.body;
+
+//     const booking = await Booking.findByIdAndUpdate(
+//         bookingId,
+//         { paymentStatus },
+//         { new: true }
+//     );
+
+//     if (!booking) {
+//         return res.status(404).json({
+//             status: 'error',
+//             message: 'Booking not found'
+//         });
+//     }
+
+//     res.status(200).json({
+//         status: 'success',
+//         data: {
+//             booking
+//         }
+//     });
+// });
+
 exports.updateBookingStatus = catchAsyncError(async (req, res, next) => {
-    const bookingId = req.params.id;
+    const {id} = req.params;
     const { paymentStatus } = req.body;
 
     const booking = await Booking.findByIdAndUpdate(
-        bookingId,
+            id,
         { paymentStatus },
         { new: true }
     );
@@ -173,34 +198,8 @@ exports.updateBookingStatus = catchAsyncError(async (req, res, next) => {
 
     res.status(200).json({
         status: 'success',
-        data: {
-            booking
-        }
-    });
-});
-
-exports.updateBookingStatus = catchAsyncError(async (req, res, next) => {
-    const bookingId = req.params.id;
-    const { paymentStatus } = req.body;
-
-    const booking = await Booking.findByIdAndUpdate(
-        bookingId,
-        { paymentStatus },
-        { new: true }
-    );
-
-    if (!booking) {
-        return res.status(404).json({
-            status: 'error',
-            message: 'Booking not found'
-        });
-    }
-
-    res.status(200).json({
-        status: 'success',
-        data: {
-            booking
-        }
+        message: 'Status Successfully Updated',
+        
     });
 });
 

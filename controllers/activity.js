@@ -38,25 +38,27 @@ exports.createActivity = catchAsyncError(async (req, res, next) => {
 
 
 exports.getAllActivities = catchAsyncError(async (req, res, next) => {
-    const keyword = req.query.keyword;
-    let activities;
+    const page = parseInt(req.query.page) || 1; // Current page number (default to 1 if not specified)
+    const limit = parseInt(req.query.limit) || 8; // Number of activities per page (default to 10 if not specified)
 
-    if (!keyword) {
-        activities = await Activity.find();
-    } else {
-        activities = await Activity.find({
-            $or: [
-                { name: { $regex: keyword, $options: 'i' } },
-                { shortdescription: { $regex: keyword, $options: 'i' } },
-                { description: { $regex: keyword, $options: 'i' } }
-            ]
-        });
-    }
+    // Calculate the number of documents to skip based on the page number and limit
+    const skip = (page - 1) * limit;
+
+    const totalActivities = await Activity.countDocuments();
+    const totalPages = Math.ceil(totalActivities / limit);
+
+    // Query the database with pagination
+    const activities = await Activity.find()
+        .skip(skip)
+        .limit(limit);
 
     res.status(200).json({
         status: 'success',
         data: {
-            activities
+            activities,
+            page,
+            totalPages,
+            totalActivities
         }
     });
 });
@@ -73,9 +75,7 @@ exports.getActivityById = catchAsyncError(async (req, res, next) => {
 
     res.status(200).json({
         status: 'success',
-        data: {
-            activity
-        }
+        activity
     });
 });
 
@@ -83,7 +83,7 @@ exports.getActivityById = catchAsyncError(async (req, res, next) => {
 exports.updateActivityById = catchAsyncError(async (req, res, next) => {
     const activityId = req.params.id;
     const {
-        name, shortdescription, price,  description, keyinstructions, reservationpolicy, benifits,
+        name, shortdescription, price, description, keyinstructions, reservationpolicy, benifits,
         duration, cancellation, groupsize, languages, highlights, included, excluded, categorey
     } = req.body;
 
@@ -171,7 +171,7 @@ exports.deleteActivityById = catchAsyncError(async (req, res, next) => {
 exports.createActivityReview = catchAsyncError(async (req, res, next) => {
     // Extract rating, comment, and activityId from the request body
     const { rating, comment } = req.body;
-    const {id} = req.params;
+    const { id } = req.params;
     // Create a review object with user's information and review details
     const review = {
         user: req.user._id,
@@ -222,7 +222,7 @@ exports.createActivityReview = catchAsyncError(async (req, res, next) => {
 
 
 exports.getAllRevirews = catchAsyncError(async (req, res, next) => {
-    const {activityId} = req.params;
+    const { activityId } = req.params;
     const activity = await Activity.findById(activityId);
     if (!activity) {
         return next(new ErrorHandler("activity not found", 404))

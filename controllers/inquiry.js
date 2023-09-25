@@ -31,6 +31,54 @@ exports.createInquiry = catchAsyncError(async (req, res, next) => {
     });
 });
 
+// for the admin 
+exports.createInquiryForAdmin = catchAsyncError(async (req, res, next) => {
+    const {
+        travelDate,
+        numberOfRooms,
+        totalDaysOfVisit,
+        travellersNationality,
+        durationOrNightStays,
+        preferSingleOrDoubleOccupancy,
+        numberOfAdults,
+        numberOfChildren,
+        selectedHotel,
+        preferMealSelection,
+        excursionSelection,
+        covid19VaccineDoses,
+        packages,
+        user,
+        status,
+      } = req.body;
+  
+      // Create a new inquiry document
+      const newInquiry = new Inquiry({
+        travelDate,
+        numberOfRooms,
+        totalDaysOfVisit,
+        travellersNationality,
+        durationOrNightStays,
+        preferSingleOrDoubleOccupancy,
+        numberOfAdults,
+        numberOfChildren,
+        selectedHotel,
+        preferMealSelection,
+        excursionSelection,
+        covid19VaccineDoses,
+        packages,
+        user,
+        status,
+      });
+  
+      // Save the new inquiry document to the database
+      await newInquiry.save();
+  
+      // Respond with the newly created inquiry document
+      res.status(201).json({
+        success: true,
+        message: 'created Successfully'
+      });
+})
 
 exports.getAllInquiryHistory = catchAsyncError(async (req, res, next) => {
     const userId = req.user._id; // Assuming you have authentication middleware
@@ -47,7 +95,7 @@ exports.getAllInquiryHistory = catchAsyncError(async (req, res, next) => {
 // admin get all inquiry
 
 exports.adminGetAllInquiry = catchAsyncError(async(req, res, next)=>{
-    const inquiries = await Inquiry.find().populate('packages');
+    const inquiries = await Inquiry.find().populate('packages').populate('user');
     res.status(200).json({
         success: true,
         data: inquiries

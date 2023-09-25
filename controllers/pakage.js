@@ -52,9 +52,7 @@ exports.getPakageById = catchAsyncError(async(req, res, next) => {
     }
     res.status(200).json({
         success: true,
-        data:{
-            pakage
-        }
+        pakage
     })
 })
 
@@ -103,6 +101,7 @@ exports.updatePakageById = catchAsyncError(async (req, res, next) => {
 
     res.status(200).json({
         status: 'success',
+        message: "Updated Successfully",
         data: {
             pakage: updatedPakage
         }
@@ -133,9 +132,9 @@ exports.deletePakageById = catchAsyncError(async (req, res, next) => {
     // Delete the pakage from the database
     await existingPakage.deleteOne();
 
-    res.status(204).json({
+    res.status(200).json({
         status: 'success',
-        data: null
+        message: "Successfully deleted"
     });
 });
 

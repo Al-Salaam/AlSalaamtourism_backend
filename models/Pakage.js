@@ -28,9 +28,8 @@ const schema = new mongoose.Schema({
     groupsize:{
         type:String
     },
-    languages:{
-        type:String
-    }, 
+    languages:[String]
+     , 
     ratings:{
         type:Number
     },
