@@ -49,10 +49,10 @@ exports.createInquiryForAdmin = catchAsyncError(async (req, res, next) => {
         packages,
         user,
         status,
-      } = req.body;
-  
-      // Create a new inquiry document
-      const newInquiry = new Inquiry({
+    } = req.body;
+
+    // Create a new inquiry document
+    const newInquiry = new Inquiry({
         travelDate,
         numberOfRooms,
         totalDaysOfVisit,
@@ -68,16 +68,16 @@ exports.createInquiryForAdmin = catchAsyncError(async (req, res, next) => {
         packages,
         user,
         status,
-      });
-  
-      // Save the new inquiry document to the database
-      await newInquiry.save();
-  
-      // Respond with the newly created inquiry document
-      res.status(201).json({
+    });
+
+    // Save the new inquiry document to the database
+    await newInquiry.save();
+
+    // Respond with the newly created inquiry document
+    res.status(201).json({
         success: true,
         message: 'created Successfully'
-      });
+    });
 })
 
 exports.getAllInquiryHistory = catchAsyncError(async (req, res, next) => {
@@ -94,49 +94,118 @@ exports.getAllInquiryHistory = catchAsyncError(async (req, res, next) => {
 
 // admin get all inquiry
 
-exports.adminGetAllInquiry = catchAsyncError(async(req, res, next)=>{
-    const inquiries = await Inquiry.find().populate('packages').populate('user');
+exports.adminGetAllInquiry = catchAsyncError(async (req, res, next) => {
+    // Get the page and limit from query parameters or set default values
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10; // Adjust the default limit as needed
+
+    // Calculate the number of documents to skip based on the page and limit
+    const skip = (page - 1) * limit;
+
+    // Query the database with pagination
+    const inquiries = await Inquiry.find()
+        .populate('packages')
+        .populate('user')
+        .skip(skip)
+        .limit(limit);
+
+    // Get the total count of inquiries (without pagination)
+    const totalCount = await Inquiry.countDocuments();
+    const totalPages = Math.ceil(totalCount / limit);
     res.status(200).json({
         success: true,
-        data: inquiries
-    })
-})
+        data: {
+            inquiries,
+            page, 
+            totalPages,
+            totalCount
+        }
+    });
+});
 
+// admin get inquiries by id
+
+exports.getInquiryById = catchAsyncError(async (req, res, next) => {
+    const { id } = req.params;
+  
+    const inquiry = await Inquiry.findById(id).populate('packages').populate('user');
+  
+    if (!inquiry) {
+      return res.status(404).json({
+        success: false,
+        message: 'Inquiry not found',
+      });
+    }
+  
+    res.status(200).json({
+      success: true,
+        inquiry,
+    });
+  });
+  
 
 // admin can update the inquiry status
 
 
 
-exports.updateInquiryStatus = catchAsyncError(async (req, res, next) => {
-    const inquiryId = req.params.id; // Assuming you have this parameter in your route
-
-    // Find the inquiry by ID
-    const inquiry = await Inquiry.findById(inquiryId);
-    if (!inquiry) {
-        return res.status(404).json({
-            success: false,
-            message: 'Inquiry not found'
-        });
-    }
-
-    // Update the inquiry status
-    const newStatus = req.body.status;
-    if (!newStatus) {
-        return res.status(400).json({
-            success: false,
-            message: 'Status field is required'
-        });
-    }
-
-    inquiry.status = newStatus;
-    await inquiry.save();
-
-    res.status(200).json({
-        success: true,
-        message: 'Inquiry status updated successfully',
-        inquiry
+exports.updateInquiryById = catchAsyncError(async (req, res, next) => {
+    const { id } = req.params;
+  
+    const {
+      travelDate,
+      numberOfRooms,
+      totalDaysOfVisit,
+      travellersNationality,
+      durationOrNightStays,
+      preferSingleOrDoubleOccupancy,
+      numberOfAdults,
+      numberOfChildren,
+      selectedHotel,
+      preferMealSelection,
+      excursionSelection,
+      covid19VaccineDoses,
+      packages,
+      user,
+      status,
+    } = req.body;
+  
+    // Create an object with the updated inquiry data
+    const updatedInquiryData = {
+      travelDate,
+      numberOfRooms,
+      totalDaysOfVisit,
+      travellersNationality,
+      durationOrNightStays,
+      preferSingleOrDoubleOccupancy,
+      numberOfAdults,
+      numberOfChildren,
+      selectedHotel,
+      preferMealSelection,
+      excursionSelection,
+      covid19VaccineDoses,
+      packages,
+      user,
+      status,
+    };
+  
+    const updatedInquiry = await Inquiry.findByIdAndUpdate(id, updatedInquiryData, {
+      new: true,
+      runValidators: true,
     });
-});
+  
+    if (!updatedInquiry) {
+      return res.status(404).json({
+        success: false,
+        message: 'Inquiry not found',
+      });
+    }
+  
+    res.status(200).json({
+      success: true,
+      message: 'Update Successfully'
+    });
+  });
+  
 
 exports.deleteInquiry = catchAsyncError(async (req, res, next) => {
     const inquiryId = req.params.id; // Assuming you have this parameter in your route
