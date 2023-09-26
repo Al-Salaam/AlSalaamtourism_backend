@@ -17,45 +17,45 @@ exports.createBooking = catchAsyncError(async (req, res, next) => {
 
     const userId = req.user._id; // Assuming user is authenticated
 
-    
-        // Fetch activity details
-        const activity = await Activity.findById(activityId);
 
-        if (!activity) {
-            return res.status(404).json({
-                status: 'error',
-                message: 'Activity not found'
-            });
+    // Fetch activity details
+    const activity = await Activity.findById(activityId);
+
+    if (!activity) {
+        return res.status(404).json({
+            status: 'error',
+            message: 'Activity not found'
+        });
+    }
+
+    // Create a Stripe Payment Intent
+    // const paymentIntent = await stripe.paymentIntents.create({
+    //     amount: totalAmount * 100, // Stripe expects amount in cents
+    //     currency: 'usd', // Change to your desired currency
+    //     description: 'Booking payment',
+    // });
+
+    // Create the booking in your database
+    const booking = await Booking.create({
+        activity: activityId,
+        user: userId,
+        date,
+        adults,
+        children,
+        infants,
+        totalAmount,
+        paymentStatus,
+        // paymentIntentId: paymentIntent.id, // Save Stripe Payment Intent ID
+    });
+
+    res.status(201).json({
+        status: 'success',
+        data: {
+            booking,
+            // clientSecret: paymentIntent.client_secret, // Pass this to the frontend
         }
+    });
 
-        // Create a Stripe Payment Intent
-        // const paymentIntent = await stripe.paymentIntents.create({
-        //     amount: totalAmount * 100, // Stripe expects amount in cents
-        //     currency: 'usd', // Change to your desired currency
-        //     description: 'Booking payment',
-        // });
-
-        // Create the booking in your database
-        const booking = await Booking.create({
-            activity: activityId,
-            user: userId,
-            date,
-            adults,
-            children,
-            infants,
-            totalAmount,
-            paymentStatus,
-            // paymentIntentId: paymentIntent.id, // Save Stripe Payment Intent ID
-        });
-
-        res.status(201).json({
-            status: 'success',
-            data: {
-                booking,
-                // clientSecret: paymentIntent.client_secret, // Pass this to the frontend
-            }
-        });
-   
 });
 
 
@@ -147,10 +147,22 @@ exports.getAllBookingsForUser = catchAsyncError(async (req, res, next) => {
 });
 
 exports.getAllbookingsforAdmin = catchAsyncError(async (req, res, next) => {
-    const bookings = await Booking.find().populate('activity').populate('user');
+    const page = parseInt(req.query.page) || 1; // Current page number (default to 1 if not specified)
+    const limit = parseInt(req.query.limit) || 8; // Number of activities per page (default to 10 if not specified)
+    // Calculate the number of documents to skip based on the page number and limit
+    const skip = (page - 1) * limit;
+    const totalBookings = await Booking.countDocuments();
+    const totalPages = Math.ceil(totalBookings / limit);
+    const bookings = await Booking.find().populate('activity').populate('user').skip(skip)
+        .limit(limit);
     res.status(200).json({
         success: true,
-        data: bookings
+        data: {
+            bookings,
+            page,
+            totalBookings,
+            totalPages
+        }
     })
 })
 
@@ -180,11 +192,11 @@ exports.getAllbookingsforAdmin = catchAsyncError(async (req, res, next) => {
 // });
 
 exports.updateBookingStatus = catchAsyncError(async (req, res, next) => {
-    const {id} = req.params;
+    const { id } = req.params;
     const { paymentStatus } = req.body;
 
     const booking = await Booking.findByIdAndUpdate(
-            id,
+        id,
         { paymentStatus },
         { new: true }
     );
@@ -199,7 +211,7 @@ exports.updateBookingStatus = catchAsyncError(async (req, res, next) => {
     res.status(200).json({
         status: 'success',
         message: 'Status Successfully Updated',
-        
+
     });
 });
 

@@ -81,10 +81,23 @@ exports.getMyProfile = (req, res, next) => {
 
 // admin get all users
 exports.getAllUsers = catchAsyncError(async (req, res, next) => {
-    const users = await User.find();
+    const page = parseInt(req.query.page) || 1; // Current page number (default to 1 if not specified)
+    const limit = parseInt(req.query.limit) || 8; // Number of activities per page (default to 10 if not specified)
+
+    const skip = (page - 1) * limit;
+    const totalUsers = await User.countDocuments();
+    const totalPages = Math.ceil(totalUsers / limit);
+    const users = await User.find()
+        .skip(skip)
+        .limit(limit);
     res.status(200).json({
         success: true,
-        data: users
+        data: {
+            users,
+            page,
+            totalPages,
+            totalUsers
+        }
     })
 })
 
@@ -132,6 +145,9 @@ exports.logout = (req, res, next) => {
 }
 
 
+
+
+
 exports.addLocationInformation = catchAsyncError(async (req, res, next) => {
     const { homeairport, address, city, state, zipcode, country } = req.body;
     const userId = req.user._id;
@@ -162,5 +178,39 @@ exports.addLocationInformation = catchAsyncError(async (req, res, next) => {
         success: true,
         user,
         message: "Location information add sucessfully"
+    })
+})
+
+
+
+exports.updateUserRole = catchAsyncError(async (req, res , next) => {
+    const { id } = req.params;
+    const { newRole } = req.body;
+
+    // Find the user by ID and update their role
+    const user = await User.findByIdAndUpdate(id, { role: newRole }, { new: true });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User role updated successfully",
+      user,
+    });
+})
+
+
+exports.deleteAllUsers = catchAsyncError(async (req, res, next) => {
+    const userId = req.params.id;
+    const user = await User.findOneAndDelete({_id : userId});
+    if(!user) {
+        return next(new ErrorHandler("user not found" , 404))
+    }
+
+    res.status(200).json({
+        success: true,
+        message: "Deleted Successfully"
     })
 })

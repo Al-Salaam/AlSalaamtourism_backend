@@ -35,11 +35,24 @@ exports.createPakage = catchAsyncError(async (req, res, next) => {
 });
 
 exports.getAllPakages = catchAsyncError(async (req, res, next) => {
-    const pakages = await Pakage.find();
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 8;
+
+    const skip = (page - 1) * limit;
+    const totalPakages = await Pakage.countDocuments();
+    const totalPages = Math.ceil(totalPakages / limit);
+
+    const pakages = await Pakage.find()
+    .skip(skip)
+    .limit(limit);
+
     res.status(200).json({
         success: true,
         data:{
-            pakages
+            pakages,
+            page,
+            totalPages,
+            totalPakages
         }
     })
 })
