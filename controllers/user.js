@@ -101,38 +101,29 @@ exports.getAllUsers = catchAsyncError(async (req, res, next) => {
     })
 })
 
-// exports.changePassword = async (req, res, next) => {
-//     try {
-//       const { oldPassword, newPassword, confirmPassword } = req.body;
+exports.changePassword = catchAsyncError(async (req, res, next) => {
+    const { oldPassword, newPassword } = req.body;
+    const user = req.user; // Assuming you have authenticated the user
 
-//       // Check if new password and confirm password match
-//       if (newPassword !== confirmPassword) {
-//         throw new ErrorHandler("New password and confirm password do not match", 400);
-//       }
+    // Check if the old password matches the current password
+    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
 
-//       // Check if old password matches the user's current password
-//       const isOldPasswordValid = await req.user.authenticate(oldPassword);
+    if (!isPasswordValid) {
+        return next(new ErrorHandler('Old password is incorrect', 401));
+    }
 
-//       if (!isOldPasswordValid) {
-//         throw new ErrorHandler("Incorrect old password", 401);
-//       }
+    // Hash the new password and update it in the database
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-//       // Set the new password using setPassword provided by passport-local-mongoose
-//       req.user.setPassword(newPassword, async () => {
-//         await req.user.save();
+    user.password = hashedPassword;
+    await user.save();
 
-//         res.status(200).json({
-//           success: true,
-//           message: "Password changed successfully",
-//         });
-//       });
-//     } catch (error) {
-//       next(error);
-//     }
-//   };
+    res.status(200).json({
+        success: true,
+        message: 'Password changed successfully',
+    });
+});
 
-
-// changes password
 
 exports.logout = (req, res, next) => {
     req?.session?.destroy((err) => {

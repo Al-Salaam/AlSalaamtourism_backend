@@ -43,12 +43,12 @@ exports.getAllPakages = catchAsyncError(async (req, res, next) => {
     const totalPages = Math.ceil(totalPakages / limit);
 
     const pakages = await Pakage.find()
-    .skip(skip)
-    .limit(limit);
+        .skip(skip)
+        .limit(limit);
 
     res.status(200).json({
         success: true,
-        data:{
+        data: {
             pakages,
             page,
             totalPages,
@@ -58,9 +58,9 @@ exports.getAllPakages = catchAsyncError(async (req, res, next) => {
 })
 
 
-exports.getPakageById = catchAsyncError(async(req, res, next) => {
+exports.getPakageById = catchAsyncError(async (req, res, next) => {
     const pakage = await Pakage.findById(req.params.id);
-    if(!pakage){
+    if (!pakage) {
         return next(new ErrorHandler('pakage not found'))
     }
     res.status(200).json({
@@ -204,9 +204,9 @@ exports.createPakageReview = catchAsyncError(async (req, res, next) => {
 });
 
 exports.getAllPakageReviews = catchAsyncError(async (req, res, next) => {
-    const {id} = req.params;
+    const { id } = req.params;
     const pakage = await Pakage.findById(id);
-    if(!pakage){ 
+    if (!pakage) {
         return next(new ErrorHandler("pakage not found", 404))
     }
     res.status(200).json({
@@ -218,17 +218,19 @@ exports.getAllPakageReviews = catchAsyncError(async (req, res, next) => {
 
 exports.deletePakageReview = catchAsyncError(async (req, res, next) => {
     const { pakageId, reviewId } = req.params;
-    
-    // Find the pakage by its ID
+
+    // Find the package by its ID
     const pakage = await Pakage.findById(pakageId);
-    
+
     // Find the index of the review to be deleted
-    const reviewIndex = pakage.reviews.findIndex((rev) => rev._id.toString() === reviewId);
-    
+    const reviewIndex = pakage.reviews.findIndex(
+        (rev) => rev._id.toString() === reviewId
+    );
+
     // If the review is found
     if (reviewIndex !== -1) {
-        // Check if the review belongs to the current user
-        if (pakage.reviews[reviewIndex].user.toString() === req.user._id.toString()) {
+        // Check if the user making the request is an admin
+        if (req.user.role === 'admin') {
             // Remove the review from the reviews array
             pakage.reviews.splice(reviewIndex, 1);
             pakage.noOfReviews = pakage.reviews.length;
@@ -240,27 +242,53 @@ exports.deletePakageReview = catchAsyncError(async (req, res, next) => {
             });
             pakage.ratings = avg / pakage.reviews.length;
 
-            // Save the updated pakage
+            // Save the updated package
             await pakage.save({
-                validateBeforeSave: false
+                validateBeforeSave: false,
             });
 
             // Send a success response
             return res.status(200).json({
-                success: true
+                success: true,
+                message: 'Deleted Successfully',
+            });
+        } else if (
+            // Check if the review belongs to the current user
+            pakage.reviews[reviewIndex].user.toString() === req.user._id.toString()
+        ) {
+            // Remove the review from the reviews array
+            pakage.reviews.splice(reviewIndex, 1);
+            pakage.noOfReviews = pakage.reviews.length;
+
+            // Recalculate the average rating
+            let avg = 0;
+            pakage.reviews.forEach((rev) => {
+                avg += rev.rating;
+            });
+            pakage.ratings = avg / pakage.reviews.length;
+
+            // Save the updated package
+            await pakage.save({
+                validateBeforeSave: false,
+            });
+
+            // Send a success response
+            return res.status(200).json({
+                success: true,
+                message: 'Deleted Successfully',
             });
         } else {
             // If the review does not belong to the current user
             return res.status(403).json({
                 success: false,
-                message: "You are not authorized to delete this review."
+                message: 'You are not authorized to delete this review.',
             });
         }
     } else {
         // If the review is not found
         return res.status(404).json({
             success: false,
-            message: "Review not found."
+            message: 'Review not found.',
         });
     }
 });

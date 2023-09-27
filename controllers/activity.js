@@ -241,12 +241,14 @@ exports.deleteActivityReview = catchAsyncError(async (req, res, next) => {
     const activity = await Activity.findById(activityId);
 
     // Find the index of the review to be deleted
-    const reviewIndex = activity.reviews.findIndex((rev) => rev._id.toString() === reviewId);
+    const reviewIndex = activity.reviews.findIndex(
+        (rev) => rev._id.toString() === reviewId
+    );
 
     // If the review is found
     if (reviewIndex !== -1) {
-        // Check if the review belongs to the current user
-        if (activity.reviews[reviewIndex].user.toString() === req.user._id.toString()) {
+        // Check if the user making the request is an admin
+        if (req.user.role === 'admin') {
             // Remove the review from the reviews array
             activity.reviews.splice(reviewIndex, 1);
             activity.noOfReviews = activity.reviews.length;
@@ -260,25 +262,52 @@ exports.deleteActivityReview = catchAsyncError(async (req, res, next) => {
 
             // Save the updated activity
             await activity.save({
-                validateBeforeSave: false
+                validateBeforeSave: false,
             });
 
             // Send a success response
             return res.status(200).json({
-                success: true
+                success: true,
+                message: 'Deleted Successfully',
+            });
+        } else if (
+            // Check if the review belongs to the current user
+            activity.reviews[reviewIndex].user.toString() === req.user._id.toString()
+        ) {
+            // Remove the review from the reviews array
+            activity.reviews.splice(reviewIndex, 1);
+            activity.noOfReviews = activity.reviews.length;
+
+            // Recalculate the average rating
+            let avg = 0;
+            activity.reviews.forEach((rev) => {
+                avg += rev.rating;
+            });
+            activity.ratings = avg / activity.reviews.length;
+
+            // Save the updated activity
+            await activity.save({
+                validateBeforeSave: false,
+            });
+
+            // Send a success response
+            return res.status(200).json({
+                success: true,
+                message: 'Deleted Successfully',
             });
         } else {
             // If the review does not belong to the current user
             return res.status(403).json({
                 success: false,
-                message: "You are not authorized to delete this review."
+                message: 'You are not authorized to delete this review.',
             });
         }
     } else {
         // If the review is not found
         return res.status(404).json({
             success: false,
-            message: "Review not found."
+            message: 'Review not found.',
         });
     }
 });
+
