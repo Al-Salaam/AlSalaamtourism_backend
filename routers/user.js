@@ -13,9 +13,9 @@ router.get("/auth/google", passport.authenticate("google", {
     scope: ["profile"]
 }))
 
-router.get("/auth/google/callback", passport.authenticate("google", {
+router.get("/login", passport.authenticate("google", {
     scope:["profile"],
-    successRedirect: process.env.FRONTEND_URL,
+    successRedirect: process.env.FRONTEND_CONSUMER_URL,
 }))
 
 router.route('/me').get(isAuthenticated, getMyProfile);

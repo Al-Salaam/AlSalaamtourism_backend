@@ -11,7 +11,8 @@ const schema = new mongoose.Schema({
         type: Number
     },
     ratings: {
-        type: Number
+        type: Number,
+        default:0
     },
     description: {
         type: String

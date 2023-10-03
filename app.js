@@ -13,10 +13,10 @@ const session = require('express-session');
 const passport = require('passport');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
-const  app = express();
+const app = express();
 
 dotenv.config({
-    path:'./config/config.env'
+    path: './config/config.env'
 });
 
 app.use(session({
@@ -24,7 +24,10 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        maxAge: 15 * 24 * 60 * 60 * 1000, // Set the session to expire after 15 days (in milliseconds)
+        maxAge: 15 * 24 * 60 * 60 * 1000,
+        // secure: process.env.NODE_ENV === "development" ? false : true,
+        // httpOnly: process.env.NODE_ENV === "development" ? false : true,
+        // sameSite: process.env.NODE_ENV === "development" ? false : "none"
     },
 }));
 
@@ -34,18 +37,30 @@ app.use(cookieParser());
 app.use(passport.authenticate('session'));
 app.use(passport.initialize());
 app.use(passport.session());
-
+// app.enable("trust proxy");
 connectPassport();
 
 
 app.use(express.json());
-app.use(express.urlencoded({extended : true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(morgan('tiny'));
 
-app.use(cors({ // Enable CORS and specify the allowed frontend URL
-    origin: process.env.FRONTEND_URL, // Replace with your frontend URL
+const allowedOrigins = [
+    process.env.FRONTEND_DASHBOARD_URL, // Add your allowed origins here
+    process.env.FRONTEND_CONSUMER_URL
+];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        // Check if the request origin is in the allowedOrigins array
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true, // Enable credentials (cookies, authorization headers)
+    credentials: true
 }));
 
 

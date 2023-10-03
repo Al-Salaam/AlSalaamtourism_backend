@@ -12,5 +12,5 @@ cloudinary.v2.config({
 })
 
 app.listen(process.env.PORT, () => {
-    console.log(`Server is connected on : http://localhost:${process.env.PORT}`)
+    console.log(`Server is connected on : http://localhost:${process.env.PORT}, is on ${process.env.NODE_ENV}`)
 })
