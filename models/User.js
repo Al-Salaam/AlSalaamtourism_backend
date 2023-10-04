@@ -22,7 +22,7 @@ const schema = new mongoose.Schema({
     },
     googleId: {
         type: String,
-        unique: true
+
     },
     role: {
         type: String,
@@ -33,38 +33,38 @@ const schema = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: 'Wishlist'
     },
-    homeairport : {
+    homeairport: {
         type: String
     },
-    address:{
+    address: {
         type: String
     },
-    city:{
-      type: String
-    },
-    state:{
+    city: {
         type: String
     },
-    zipcode:{
+    state: {
+        type: String
+    },
+    zipcode: {
         type: Number
     },
-    country:{
-        type:String
+    country: {
+        type: String
     }
 
-    
-},
-{
-    timestamps: true
-});
 
-schema.pre('save', async function(next){
+},
+    {
+        timestamps: true
+    });
+
+schema.pre('save', async function (next) {
     if (!this.isModified("password")) return next();
     this.password = await bcrypt.hash(this.password, 10);
     next();
 });
 
-schema.pre('save', async function(next){
+schema.pre('save', async function (next) {
     if (!this.photo) {
         this.photo = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.name)}`;
     }
