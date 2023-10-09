@@ -101,48 +101,47 @@ exports.getAllUsers = catchAsyncError(async (req, res, next) => {
     })
 })
 
-exports.changePassword = catchAsyncError(async (req, res, next) => {
-    const { oldPassword, newPassword } = req.body;
-    const user = req.user; // Assuming you have authenticated the user
+exports.changePassword = async (req, res, next) => {
+    try {
+        const userId = req.user._id; // Assuming your User model has an '_id' field for the user's ID
+        const newPassword = req.body.newPassword; // Assuming newPassword is sent in the request body
 
-    // Check if the old password matches the current password
-    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+        if (!newPassword) {
+            return res.status(400).json({ message: 'New password is missing in the request.' });
+        }
 
-    if (!isPasswordValid) {
-        return next(new ErrorHandler('Old password is incorrect', 401));
+        // Hash the new password
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+        // Update the user's password in the database
+        await User.findByIdAndUpdate(userId, { password: hashedPassword });
+
+        res.status(200).json({ message: 'Password changed successfully' });
+    } catch (error) {
+        console.error(error); // Log the error for debugging purposes
+        res.status(500).json({ message: 'Internal Server Error' });
     }
+};
 
-    // Hash the new password and update it in the database
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    user.password = hashedPassword;
-    await user.save();
-
-    res.status(200).json({
-        success: true,
-        message: 'Password changed successfully',
-    });
-});
 
 
 exports.logout = (req, res, next) => {
     req?.session?.destroy((err) => {
         if (err) return next(err);
         res.clearCookie("connect.sid",
-        // {
-        //     secure: process.env.NODE_ENV === "development" ? false : true,
-        //     httpOnly: process.env.NODE_ENV === "development" ? false : true,
-        //     sameSite: process.env.NODE_ENV === "development" ? false : "none"
-        // }
+            // {
+            //     secure: process.env.NODE_ENV === "development" ? false : true,
+            //     httpOnly: process.env.NODE_ENV === "development" ? false : true,
+            //     sameSite: process.env.NODE_ENV === "development" ? false : "none"
+            // }
         );
         res.status(200).json({
             message: "logout Successfully"
         })
     })
 }
-
-
-
 
 
 exports.addLocationInformation = catchAsyncError(async (req, res, next) => {
@@ -180,7 +179,7 @@ exports.addLocationInformation = catchAsyncError(async (req, res, next) => {
 
 
 
-exports.updateUserRole = catchAsyncError(async (req, res , next) => {
+exports.updateUserRole = catchAsyncError(async (req, res, next) => {
     const { id } = req.params;
     const { newRole } = req.body;
 
@@ -188,22 +187,22 @@ exports.updateUserRole = catchAsyncError(async (req, res , next) => {
     const user = await User.findByIdAndUpdate(id, { role: newRole }, { new: true });
 
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({ error: "User not found" });
     }
 
     res.status(200).json({
-      success: true,
-      message: "User role updated successfully",
-      user,
+        success: true,
+        message: "User role updated successfully",
+        user,
     });
 })
 
 
 exports.deleteAllUsers = catchAsyncError(async (req, res, next) => {
     const userId = req.params.id;
-    const user = await User.findOneAndDelete({_id : userId});
-    if(!user) {
-        return next(new ErrorHandler("user not found" , 404))
+    const user = await User.findOneAndDelete({ _id: userId });
+    if (!user) {
+        return next(new ErrorHandler("user not found", 404))
     }
 
     res.status(200).json({

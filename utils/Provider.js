@@ -1,8 +1,8 @@
 const { Strategy: GoogleStrategy } = require('passport-google-oauth20');
-const LocalStrategy = require('passport-local').Strategy; 
+const LocalStrategy = require('passport-local').Strategy;
 const passport = require("passport");
 const User = require('../models/User');
-const bcrypt = require('bcrypt'); 
+const bcrypt = require('bcrypt');
 
 exports.connectPassport = () => {
     passport.use(new GoogleStrategy({
@@ -16,18 +16,18 @@ exports.connectPassport = () => {
             googleId: profile.id
         })
 
-        if(!user){
-           
+        if (!user) {
+
             const newUser = await User.create({
                 googleId: profile.id || null, // Set googleId only if provided
                 name: profile.displayName,
                 photo: profile.photos[0]?.value || null,
-                
+
             })
 
-            return done(null , newUser)
-        }else{
-            return done(null , user)
+            return done(null, newUser)
+        } else {
+            return done(null, user)
         }
 
 
@@ -35,9 +35,9 @@ exports.connectPassport = () => {
 
 
     //local strategy
-     // Local Strategy Configuration
-     passport.use(
-        new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
+    // Local Strategy Configuration
+    passport.use(
+        new LocalStrategy({ usernameField: 'email', passwordField: 'password', }, async (email, password, done) => {
             try {
                 const user = await User.findOne({ email });
 
@@ -60,15 +60,15 @@ exports.connectPassport = () => {
 
 
 
- passport.serializeUser((user, done) => {
-    done(null, user.id)
- })
+    passport.serializeUser((user, done) => {
+        done(null, user.id)
+    })
 
- passport.deserializeUser(async (id, done) => {
-    // find user id
-    const user = await User.findById(id);
-    done(null, user)
- })
+    passport.deserializeUser(async (id, done) => {
+        // find user id
+        const user = await User.findById(id);
+        done(null, user)
+    })
 
 }
 

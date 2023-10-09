@@ -23,7 +23,7 @@ router.route('/addlocation').put(isAuthenticated, addLocationInformation);
 router.route('/admin/users').get(isAuthenticated, authorizeRole(["admin"]), getAllUsers);
 router.route('/admin/users/:id').delete(isAuthenticated, authorizeRole(["admin"]), deleteAllUsers)
 router.route('/admin/user/:id/updateRole').put(isAuthenticated, authorizeRole(['admin']), updateUserRole )
-router.route('/auth/change-password').post(isAuthenticated, changePassword);
+router.route('/auth/change-password').put(isAuthenticated, changePassword);
 router.route('/logout').get(logout);
 
 module.exports = router;
