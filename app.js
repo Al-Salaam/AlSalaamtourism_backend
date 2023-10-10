@@ -47,7 +47,9 @@ app.use(morgan('tiny'));
 
 const allowedOrigins = [
     process.env.FRONTEND_DASHBOARD_URL, // Add your allowed origins here
-    process.env.FRONTEND_CONSUMER_URL
+    process.env.FRONTEND_CONSUMER_URL,
+    process.env.DEVELOPMENT_CONSUMER_URL,
+    process.env.DEVELOPMENT_DASHBOARD_URL
 ];
 
 app.use(cors({

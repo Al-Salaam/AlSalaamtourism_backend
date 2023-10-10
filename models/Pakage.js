@@ -4,34 +4,34 @@ const schema = new mongoose.Schema({
     heading: {
         type: String,
     },
-    description:{
-        type:String
-    },
-    keyIntructions:{
+    description: {
         type: String
     },
-    cancellationguide:{
-        type:String
-    },
-    childpolicy:{
-        type:String
-    },
-    tourbenifits:{
+    keyIntructions: {
         type: String
     },
-    duration:{
+    cancellationguide: {
         type: String
     },
-    cancellation:{
-        type:String
+    childpolicy: {
+        type: String
     },
-    groupsize:{
-        type:String
+    tourbenifits: {
+        type: String
     },
-    languages:[String]
-     , 
-    ratings:{
-        type:Number
+    duration: {
+        type: String
+    },
+    cancellation: {
+        type: String
+    },
+    groupsize: {
+        type: String
+    },
+    languages: [String]
+    ,
+    ratings: {
+        type: Number
     },
     images: [{
         public_id: {
@@ -63,7 +63,7 @@ const schema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    itemType:{
+    itemType: {
         type: String,
         default: "package"
     }
