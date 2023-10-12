@@ -215,7 +215,8 @@ exports.createActivityReview = catchAsyncError(async (req, res, next) => {
 
     // Send a successful response with status 200 and a success flag
     res.status(200).json({
-        success: true
+        success: true,
+        message: 'Review added Successfully'
     });
 });
 
@@ -223,13 +224,13 @@ exports.createActivityReview = catchAsyncError(async (req, res, next) => {
 
 exports.getAllRevirews = catchAsyncError(async (req, res, next) => {
     const { activityId } = req.params;
-    const activity = await Activity.findById(activityId);
+    const activity = await Activity.findById(activityId).populate('reviews.user');
     if (!activity) {
         return next(new ErrorHandler("activity not found", 404))
     }
     res.status(200).json({
         success: true,
-        data: activity.reviews
+        reviews: activity.reviews
     })
 })
 

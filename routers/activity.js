@@ -17,7 +17,7 @@ router.route('/activity/:id')
 
 router.route('/activity/:id/review').put(isAuthenticated, createActivityReview);
 router.route('/activity/:activityId/reviews')
-.get(isAuthenticated, authorizeRole(['admin']), getAllRevirews);
+.get(getAllRevirews);
 
 router.route('/activity/:activityId/reviews/:reviewId')
 .delete(isAuthenticated, deleteActivityReview);
