@@ -199,19 +199,20 @@ exports.createPakageReview = catchAsyncError(async (req, res, next) => {
 
     // Send a successful response with status 200 and a success flag
     res.status(200).json({
-        success: true
+        success: true,
+        message: "Review added Successfully"
     });
 });
 
 exports.getAllPakageReviews = catchAsyncError(async (req, res, next) => {
     const { id } = req.params;
-    const pakage = await Pakage.findById(id);
+    const pakage = await Pakage.findById(id).populate('reviews.user');
     if (!pakage) {
         return next(new ErrorHandler("pakage not found", 404))
     }
     res.status(200).json({
         success: true,
-        data: pakage.reviews
+        reviews: pakage.reviews
     })
 })
 

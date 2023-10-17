@@ -13,6 +13,8 @@ const session = require('express-session');
 const passport = require('passport');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const contact = require('./routers/contact');
+
 const app = express();
 
 dotenv.config({
@@ -71,7 +73,8 @@ app.use('/api/v1', activity);
 app.use('/api/v1', pakage);
 app.use('/api/v1', wishlist);
 app.use('/api/v1', inquiry);
-app.use('/api/v1', booking)
+app.use('/api/v1', booking);
+app.use('/api/v1', contact);
 module.exports = app;
 
 app.use(ErrorMiddleware);

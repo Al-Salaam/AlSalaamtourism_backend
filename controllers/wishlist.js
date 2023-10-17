@@ -8,28 +8,28 @@ const ErrorHandler = require("../utils/errorHandler");
 exports.addToWishlist = catchAsyncError(async (req, res, next) => {
     const { itemId, itemType } = req.body;
     const userId = req.user._id;
-    const wishlist = await Wishlist.findOne({ user: userId });
+    let wishlist = await Wishlist.findOne({ user: userId });
 
+    // If wishlist does not exist, create a new one for the user
     if (!wishlist) {
-        return next(new ErrorHandler("wishlist not found for the user", 404));
+        wishlist = new Wishlist({ user: userId, activities: [], packages: [] });
     }
 
     let itemToAdd;
     if (itemType === 'activity') {
         itemToAdd = await Activity.findById(itemId);
     } else if (itemType === 'package') {
-        itemToAdd = await Pakage.findById(itemId);
+        itemToAdd = await Pakage.findById(itemId); // Assuming Pakage is your model name for packages
     }
 
     if (!itemToAdd) {
-        return next(new ErrorHandler("items not found", 404));
+        return next(new ErrorHandler("Item not found", 404));
     }
 
     // Check if the item is already in the wishlist
-    const itemExists = wishlist.activities.includes(itemToAdd._id) ||
-        wishlist.packages.includes(itemToAdd._id);
+    const itemExists = wishlist.activities.includes(itemToAdd._id) || wishlist.packages.includes(itemToAdd._id);
     if (itemExists) {
-        return next(new ErrorHandler("item already exits in the wistlist", 400));
+        return next(new ErrorHandler("Item already exists in the wishlist", 400));
     }
 
     // Add the item to the appropriate list (activities or packages)
@@ -43,6 +43,7 @@ exports.addToWishlist = catchAsyncError(async (req, res, next) => {
 
     res.status(200).json({ message: 'Item added to wishlist successfully' });
 });
+
 
 
 exports.getWishlist = catchAsyncError(async (req, res, next) => {
@@ -71,13 +72,19 @@ exports.removeFromWishlist = catchAsyncError(async (req, res, next) => {
     const { itemId, itemType } = req.body;
     const userId = req.user._id;
     
+    // Check if itemId is provided in the request body
+    if (!itemId) {
+        return next(new ErrorHandler("Item ID is missing in the request", 400));
+    }
+
     const wishlist = await Wishlist.findOne({ user: userId });
 
     if (!wishlist) {
-        return next(new ErrorHandler("wishlist not found for the user", 404));
+        return next(new ErrorHandler("Wishlist not found for the user", 404));
     }
 
     let itemToRemove;
+
     if (itemType === 'activity') {
         itemToRemove = itemId;
         wishlist.activities.pull(itemToRemove);
@@ -85,11 +92,10 @@ exports.removeFromWishlist = catchAsyncError(async (req, res, next) => {
         itemToRemove = itemId;
         wishlist.packages.pull(itemToRemove);
     } else {
-        return next(new ErrorHandler("Invalid type item", 400));
+        return next(new ErrorHandler("Invalid item type", 400));
     }
 
     await wishlist.save();
 
     res.status(200).json({ message: 'Item removed from wishlist successfully' });
-
-})
+});

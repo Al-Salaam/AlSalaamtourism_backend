@@ -1,7 +1,7 @@
 const express = require('express');
 
 const passport = require("passport");
-const { getMyProfile, logout, registeration, login, adminLogin, getAllUsers, changePassword, addLocationInformation, deleteAllUsers, updateUserRole } = require('../controllers/user');
+const { getMyProfile, logout, registeration, login, adminLogin, getAllUsers, changePassword, addLocationInformation, deleteAllUsers, updateUserRole, updatePersonalInfo } = require('../controllers/user');
 const { isAuthenticated, authorizeRole } = require('../middlewares/auth');
 
 const router = express.Router();
@@ -20,6 +20,7 @@ router.get("/login", passport.authenticate("google", {
 
 router.route('/me').get(isAuthenticated, getMyProfile);
 router.route('/addlocation').put(isAuthenticated, addLocationInformation);
+router.route('/updateperfonalinfo').put(isAuthenticated, updatePersonalInfo);
 router.route('/admin/users').get(isAuthenticated, authorizeRole(["admin"]), getAllUsers);
 router.route('/admin/users/:id').delete(isAuthenticated, authorizeRole(["admin"]), deleteAllUsers)
 router.route('/admin/user/:id/updateRole').put(isAuthenticated, authorizeRole(['admin']), updateUserRole )

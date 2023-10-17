@@ -104,10 +104,25 @@ exports.getAllUsers = catchAsyncError(async (req, res, next) => {
 exports.changePassword = async (req, res, next) => {
     try {
         const userId = req.user._id; // Assuming your User model has an '_id' field for the user's ID
-        const newPassword = req.body.newPassword; // Assuming newPassword is sent in the request body
+        const { oldPassword, newPassword } = req.body; // Extract oldPassword and newPassword from the request body
 
-        if (!newPassword) {
-            return res.status(400).json({ message: 'New password is missing in the request.' });
+        // Check if both oldPassword and newPassword are provided in the request body
+        if (!oldPassword || !newPassword) {
+            return res.status(400).json({ message: 'Both old password and new password are required.' });
+        }
+
+        // Find the user by ID
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Compare the oldPassword provided in the request with the hashed password in the database
+        const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: 'Invalid old password' });
         }
 
         // Hash the new password
@@ -175,6 +190,34 @@ exports.addLocationInformation = catchAsyncError(async (req, res, next) => {
         user,
         message: "Location information add sucessfully"
     })
+})
+
+exports.updatePersonalInfo = catchAsyncError(async (req, res, nxt) => {
+   
+    const { name, phone, email, aboutself } = req.body; // Extract updated fields from the request body
+    const userId = req.user._id;
+
+    // Find the user by ID
+    let user = await User.findById(userId);
+
+    if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Update user fields if provided in the request body
+    if (name) user.name = name;
+    if (phone) user.phone = phone;
+    if (email) user.email = email;
+    if (aboutself) user.aboutself = aboutself;
+    
+
+    // Save the updated user object
+    await user.save();
+
+    // Return the updated user object as the response
+    res.status(200).json({
+        message: 'Successfully Updated'
+    });
 })
 
 

@@ -50,6 +50,12 @@ const schema = new mongoose.Schema({
     },
     country: {
         type: String
+    },
+    phone:{
+        type: String
+    },
+    aboutself:{
+        type: String
     }
 
 
