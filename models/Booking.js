@@ -4,20 +4,17 @@ const bookingSchema = new mongoose.Schema({
     activity: {
         type: mongoose.Schema.ObjectId,
         ref: 'Activity',
-        required: true
     },
     user: {
         type: mongoose.Schema.ObjectId,
         ref: 'User',
-        required: true
     },
     date: {
         type: Date,
-        required: true
+        
     },
     adults: {
         type: Number,
-        required: true
     },
     children: {
         type: Number,

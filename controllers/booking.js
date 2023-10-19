@@ -1,136 +1,94 @@
-const stripe = require("../config/stripe");
+
 const { catchAsyncError } = require("../middlewares/catchAsyncError");
-const Activity = require("../models/Activity");
+const Activity = require('../models/Activity');
 const Booking = require("../models/Booking");
 
+const stripe = require('stripe')('sk_test_51NiXsqLx7xThqHSA0MtfpGnKjh9pB38YAXRXEGkDpszQRwYehYIlkPxGuwi2Q8gTRx1Bqb63pvwbkbovbSGFRuTS00GFXNrMO3');
 
-exports.createBooking = catchAsyncError(async (req, res, next) => {
+
+exports.createBooking = async (req, res, next) => {
     const {
         activityId,
-        date,
-        adults,
-        children = 0,
-        infants = 0,
-        totalAmount,
-        paymentStatus = 'pending'
-    } = req.body;
-
-    const userId = req.user._id; // Assuming user is authenticated
-
-
-    // Fetch activity details
-    const activity = await Activity.findById(activityId);
-
-    if (!activity) {
-        return res.status(404).json({
-            status: 'error',
-            message: 'Activity not found'
-        });
-    }
-
-    // Create a Stripe Payment Intent
-    // const paymentIntent = await stripe.paymentIntents.create({
-    //     amount: totalAmount * 100, // Stripe expects amount in cents
-    //     currency: 'usd', // Change to your desired currency
-    //     description: 'Booking payment',
-    // });
-
-    // Create the booking in your database
-    const booking = await Booking.create({
-        activity: activityId,
-        user: userId,
         date,
         adults,
         children,
         infants,
         totalAmount,
-        paymentStatus,
-        // paymentIntentId: paymentIntent.id, // Save Stripe Payment Intent ID
-    });
+        paymentStatus
+    } = req.body;
 
-    res.status(201).json({
-        status: 'success',
-        data: {
-            booking,
-            // clientSecret: paymentIntent.client_secret, // Pass this to the frontend
+
+    const userId = req.user._id; // Assuming user is authenticated
+    try {
+        // Fetch activity details
+        const activity = await Activity.findById(activityId);
+
+        // Check if activity is not found
+        if (!activity) {
+            return res.status(404).json({
+                status: 'error',
+                message: 'Activity not found'
+            });
         }
-    });
 
-});
+        // Convert totalAmount to cents (Stripe's expected format)
+        const totalAmountCents = totalAmount * 100;
+
+        // Create a Stripe Checkout Session
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [
+                {
+                    price_data: {
+                        currency: 'aed', // Change to 'aed' for Dirham
+                        unit_amount: totalAmountCents,
+                        product_data: {
+                            name: activity.name,
+                            images: [activity.images[0].url],
+                            description: activity.shortdescription,
+                            metadata: {
+                                id: activity._id
+                            }
+                        },
+                    },
+                    quantity: 1,
+                },
+            ],
+            mode: 'payment',
+            success_url: `${process.env.FRONTEND_CONSUMER_URL}/success`, // Customize this URL
+            cancel_url: `${process.env.FRONTEND_CONSUMER_URL}/cancel`, // Customize this URL
+        });
+
+        // Create the booking in your database
+        const booking = await Booking.create({
+            activity: activity._id,
+            user: userId,
+            date,
+            adults,
+            children,
+            infants,
+            totalAmount: totalAmountCents / 100, // Store totalAmount in the original format
+            paymentStatus,
+            stripeCheckoutSessionId: session.url, // Save Stripe Session URL
+        });
+
+        res.status(201).json({
+            status: 'success',
+            data: {
+                booking,
+                stripeCheckoutSessionUrl: session.url, // Pass this to the frontend
+            },
+        });
+    } catch (error) {
+        console.error('Error creating booking:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'An error occurred while creating the booking',
+        });
+    }
+};
 
 
-// exports.createBooking = catchAsyncError(async (req, res, next) => {
-//     const {
-//         activityId,
-//         date,
-//         adults,
-//         children = 0,
-//         infants = 0,
-//         totalAmount,
-//         paymentStatus = 'pending'
-//     } = req.body;
-
-//     const userId = req.user._id; // Assuming user is authenticated
-
-//     try {
-//         // Fetch activity details
-//         const activity = await Activity.findById(activityId);
-
-//         if (!activity) {
-//             return res.status(404).json({
-//                 status: 'error',
-//                 message: 'Activity not found'
-//             });
-//         }
-
-//         // Create a Stripe Checkout Session
-//         const session = await stripe.checkout.sessions.create({
-//             payment_method_types: ['card'],
-//             line_items: [
-//                 {
-//                     price_data: {
-//                         currency: 'usd', // Change to your desired currency
-//                         unit_amount: totalAmount * 100, // Stripe expects amount in cents
-//                         product_data: {
-//                             name: activity.name, // Name of the activity
-//                         },
-//                     },
-//                     quantity: 1,
-//                 },
-//             ],
-//             mode: 'payment',
-//             success_url: 'https://yourwebsite.com/success', // Customize this URL
-//             cancel_url: 'https://yourwebsite.com/cancel', // Customize this URL
-//         });
-
-//         // Create the booking in your database
-//         const booking = await Booking.create({
-//             activity: activityId,
-//             user: userId,
-//             date,
-//             adults,
-//             children,
-//             infants,
-//             totalAmount,
-//             paymentStatus,
-//             stripeCheckoutSessionId: session.id, // Save Stripe Session ID
-//         });
-
-//         res.status(201).json({
-//             status: 'success',
-//             data: {
-//                 booking,
-//                 stripeCheckoutSessionId: session.id, // Pass this to the frontend
-//             },
-//         });
-//     } catch (error) {
-//         console.error('Error creating booking:', error);
-//         res.status(500).json({
-//             status: 'error',
-//             message: 'An error occurred while creating the booking',
-//         });
-//     }
-// });
 
 
 exports.getAllBookingsForUser = catchAsyncError(async (req, res, next) => {

@@ -4,7 +4,7 @@ const { createBooking, getAllBookingsForUser, updateBookingStatus, deleteBooking
 
 const router = express.Router();
 
-router.route('/bookings').post(isAuthenticated, createBooking);
+router.route('/create-checkout-session').post(isAuthenticated, createBooking);
 router.route('/bookings/user').get(isAuthenticated, getAllBookingsForUser);
 router.route('/bookings/admin').get(isAuthenticated, authorizeRole(['admin']), getAllbookingsforAdmin);
 router.route('/bookings/:id/status').put(isAuthenticated, authorizeRole(['admin']), updateBookingStatus);
