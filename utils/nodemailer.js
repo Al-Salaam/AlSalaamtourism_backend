@@ -5,7 +5,7 @@ function createTransporter() {
         service: 'gmail',
         auth: {
             user: 'alsalaampakistan@gmail.com', // your Gmail email address
-            pass: 'miqjgnpfnrgfmupe' // your Gmail password
+            pass: 'emafawcytlepuzik' // your Gmail password
         }
     });
 

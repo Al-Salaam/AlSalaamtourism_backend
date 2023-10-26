@@ -43,7 +43,6 @@ const generateInquiryEmailContent = (user, package, travelDate, otherDetails) =>
         { key: 'User Name:', value: user.name},
         { key: 'Package ID#:', value: package._id },
         { key: 'Package Name:', value: package.heading },
-        { key: 'Travel Date:', value: travelDate },
         // Add other inquiry details here
         ...otherDetails.map(detail => ({
             key: detail.key,

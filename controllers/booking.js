@@ -97,7 +97,7 @@ exports.getAllBookingsForUser = catchAsyncError(async (req, res, next) => {
     const bookings = await Booking.find({ user: userId }).populate('activity').populate('user');
 
     res.status(200).json({
-        status: 'success',
+        success: true,
         data: {
             bookings
         }
