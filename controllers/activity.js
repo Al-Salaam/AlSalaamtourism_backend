@@ -146,10 +146,7 @@ exports.deleteActivityById = catchAsyncError(async (req, res, next) => {
     const deletedActivity = await Activity.findOneAndDelete({ _id: activityId });
 
     if (!deletedActivity) {
-        return res.status(404).json({
-            status: 'error',
-            message: 'Activity not found'
-        });
+        return next(new ErrorHandler("activity not found", 404));
     }
 
     // Delete images from Cloudinary
@@ -298,17 +295,12 @@ exports.deleteActivityReview = catchAsyncError(async (req, res, next) => {
             });
         } else {
             // If the review does not belong to the current user
-            return res.status(403).json({
-                success: false,
-                message: 'You are not authorized to delete this review.',
-            });
+            return next(new ErrorHandler("You are not authorized to delete this review.", 403));
+            
         }
     } else {
         // If the review is not found
-        return res.status(404).json({
-            success: false,
-            message: 'Review not found.',
-        });
+        return next(new ErrorHandler("Review not found", 404));
     }
 });
 

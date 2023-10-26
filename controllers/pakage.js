@@ -128,10 +128,7 @@ exports.deletePakageById = catchAsyncError(async (req, res, next) => {
     // Check if the pakage exists
     const existingPakage = await Pakage.findById(pakageId);
     if (!existingPakage) {
-        return res.status(404).json({
-            status: 'error',
-            message: 'Pakage not found'
-        });
+        return next(new ErrorHandler("package not found", 404));
     }
 
     // Delete images from Cloudinary
@@ -279,17 +276,12 @@ exports.deletePakageReview = catchAsyncError(async (req, res, next) => {
                 message: 'Deleted Successfully',
             });
         } else {
+            return next(new ErrorHandler("You are not authorized to delete this review.", 403));
             // If the review does not belong to the current user
-            return res.status(403).json({
-                success: false,
-                message: 'You are not authorized to delete this review.',
-            });
+            
         }
     } else {
         // If the review is not found
-        return res.status(404).json({
-            success: false,
-            message: 'Review not found.',
-        });
+        return next(new ErrorHandler("reviews not found", 404));
     }
 });

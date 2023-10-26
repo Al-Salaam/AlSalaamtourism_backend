@@ -37,7 +37,7 @@ exports.login = (req, res, next) => {
                 return next(err);
             }
 
-            res.status(200).json({ success: true, message: 'Login successful', user });
+            res.status(200).json({ success: true, message: 'Login successfully', user });
         });
     })(req, res, next);
 };
@@ -62,7 +62,7 @@ exports.adminLogin = (req, res, next) => {
                     return next(err);
                 }
 
-                res.status(200).json({ success: true, message: 'Admin login successful', user });
+                res.status(200).json({ success: true, message: 'Admin login successfully', user });
             });
         } else {
             // If the user is not an admin, deny access
@@ -108,21 +108,22 @@ exports.changePassword = async (req, res, next) => {
 
         // Check if both oldPassword and newPassword are provided in the request body
         if (!oldPassword || !newPassword) {
-            return res.status(400).json({ message: 'Both old password and new password are required.' });
+            return next(new ErrorHandler("Both old password and new password are required.", 400));
+            
         }
 
         // Find the user by ID
         const user = await User.findById(userId);
 
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return next(new ErrorHandler("User not found", 404));
         }
 
         // Compare the oldPassword provided in the request with the hashed password in the database
         const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
 
         if (!isPasswordValid) {
-            return res.status(401).json({ message: 'Invalid old password' });
+            return next(new ErrorHandler("Invalid old password", 401));
         }
 
         // Hash the new password
@@ -192,7 +193,7 @@ exports.addLocationInformation = catchAsyncError(async (req, res, next) => {
     })
 })
 
-exports.updatePersonalInfo = catchAsyncError(async (req, res, nxt) => {
+exports.updatePersonalInfo = catchAsyncError(async (req, res, next) => {
    
     const { name, phone, email, aboutself } = req.body; // Extract updated fields from the request body
     const userId = req.user._id;
@@ -201,7 +202,7 @@ exports.updatePersonalInfo = catchAsyncError(async (req, res, nxt) => {
     let user = await User.findById(userId);
 
     if (!user) {
-        return res.status(404).json({ error: 'User not found' });
+        return next(new ErrorHandler("User not found", 404));
     }
 
     // Update user fields if provided in the request body
@@ -230,7 +231,7 @@ exports.updateUserRole = catchAsyncError(async (req, res, next) => {
     const user = await User.findByIdAndUpdate(id, { role: newRole }, { new: true });
 
     if (!user) {
-        return res.status(404).json({ error: "User not found" });
+        return next(new ErrorHandler("User not found", 404));
     }
 
     res.status(200).json({

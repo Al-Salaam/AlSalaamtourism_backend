@@ -1,6 +1,7 @@
 const { catchAsyncError } = require('../middlewares/catchAsyncError');
 const Inquiry = require('../models/Inquiry');
 const Pakage = require('../models/Pakage');
+const ErrorHandler = require('../utils/errorHandler');
 const createTransporter = require('../utils/nodemailer');
 const Mailgen = require('mailgen');
 
@@ -31,10 +32,7 @@ exports.createInquiry = catchAsyncError(async (req, res, next) => {
     // Check if the provided package ID exists
     const package = await Pakage.findById(packageId);
     if (!package) {
-      return res.status(404).json({
-        success: false,
-        message: 'Package not found'
-      });
+      return next(new ErrorHandler("package not found", 404));
     }
 
   
@@ -146,10 +144,7 @@ exports.getInquiryById = catchAsyncError(async (req, res, next) => {
   const inquiry = await Inquiry.findById(id).populate('packages').populate('user');
 
   if (!inquiry) {
-    return res.status(404).json({
-      success: false,
-      message: 'Inquiry not found',
-    });
+    return next(new ErrorHandler("inquiry not found", 404));
   }
 
   res.status(200).json({
@@ -169,10 +164,7 @@ exports.updateInquiryById = catchAsyncError(async (req, res, next) => {
   });
 
   if (!updatedInquiry) {
-    return res.status(404).json({
-      success: false,
-      message: 'Inquiry not found',
-    });
+    return next(new ErrorHandler("inquiry not found", 404));
   }
 
   res.status(200).json({
@@ -188,10 +180,7 @@ exports.deleteInquiry = catchAsyncError(async (req, res, next) => {
   const deletedInquiry = await Inquiry.findOneAndDelete({ _id: inquiryId });
 
   if (!deletedInquiry) {
-    return res.status(404).json({
-      success: false,
-      message: 'Inquiry not found',
-    });
+    return next(new ErrorHandler("inquiry not found", 404));
   }
 
   res.status(200).json({

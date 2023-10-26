@@ -2,6 +2,7 @@
 const { catchAsyncError } = require("../middlewares/catchAsyncError");
 const Activity = require('../models/Activity');
 const Booking = require("../models/Booking");
+const ErrorHandler = require("../utils/errorHandler");
 
 const stripe = require('stripe')('sk_test_51NiXsqLx7xThqHSA0MtfpGnKjh9pB38YAXRXEGkDpszQRwYehYIlkPxGuwi2Q8gTRx1Bqb63pvwbkbovbSGFRuTS00GFXNrMO3');
 
@@ -25,10 +26,7 @@ exports.createBooking = async (req, res, next) => {
 
         // Check if activity is not found
         if (!activity) {
-            return res.status(404).json({
-                status: 'error',
-                message: 'Activity not found'
-            });
+            return next(new ErrorHandler("Activity not found", 404));
         }
 
         // Convert totalAmount to cents (Stripe's expected format)
@@ -124,30 +122,7 @@ exports.getAllbookingsforAdmin = catchAsyncError(async (req, res, next) => {
     })
 })
 
-// exports.updateBookingStatus = catchAsyncError(async (req, res, next) => {
-//     const bookingId = req.params.id;
-//     const { paymentStatus } = req.body;
 
-//     const booking = await Booking.findByIdAndUpdate(
-//         bookingId,
-//         { paymentStatus },
-//         { new: true }
-//     );
-
-//     if (!booking) {
-//         return res.status(404).json({
-//             status: 'error',
-//             message: 'Booking not found'
-//         });
-//     }
-
-//     res.status(200).json({
-//         status: 'success',
-//         data: {
-//             booking
-//         }
-//     });
-// });
 
 exports.updateBookingStatus = catchAsyncError(async (req, res, next) => {
     const { id } = req.params;
@@ -160,10 +135,7 @@ exports.updateBookingStatus = catchAsyncError(async (req, res, next) => {
     );
 
     if (!booking) {
-        return res.status(404).json({
-            status: 'error',
-            message: 'Booking not found'
-        });
+        return next(new ErrorHandler("booking not found", 404));
     }
 
     res.status(200).json({
@@ -179,10 +151,7 @@ exports.deleteBooking = catchAsyncError(async (req, res, next) => {
     const booking = await Booking.findByIdAndDelete(bookingId);
 
     if (!booking) {
-        return res.status(404).json({
-            status: 'error',
-            message: 'Booking not found'
-        });
+        return next(new ErrorHandler("booking not found", 404));
     }
 
     res.status(200).json({
