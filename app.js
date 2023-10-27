@@ -45,17 +45,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('tiny'));
 
-// const allowedOrigins = [
-//     process.env.FRONTEND_CONSUMER_URL, // Your frontend application origin
-//     process.env.FRONTEND_DASHBOARD_URL,  // Example: Another frontend application origin
-//     // Add other origins as needed
-// ];
+const allowedOrigins = [
+    'http://localhost:5173', // Your frontend application origin
+    // Add other origins as needed
+];
 
-app.use(cors({
-    origin: 'http://localhost:5173/',
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true
-}));
+};
+
+app.use(cors(corsOptions));
+
 
 app.use('/api/v1', user);
 app.use('/api/v1', activity);
