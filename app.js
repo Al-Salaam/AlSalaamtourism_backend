@@ -21,16 +21,20 @@ dotenv.config({
     path: './config/config.env'
 });
 
+
+app.set('trust proxy', 1); // Trust proxy headers
+
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
         maxAge: 15 * 24 * 60 * 60 * 1000,
-        secure: true,
+        secure: true,    // Set to true to require HTTPS for cookies
         httpOnly: true,
-        sameSite: "none"
+        sameSite: 'none', // Set to 'none' for cross-site cookies
     },
+    proxy: true, // Set to true when running behind a proxy
 }));
 
 app.use(cookieParser());
