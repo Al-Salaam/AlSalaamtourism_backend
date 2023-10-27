@@ -46,9 +46,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan('tiny'));
 
 const allowedOrigins = [
-    'https://alsalaam-tourism-frontend.vercel.app',
-    // 'http://localhost:5173', // Your frontend application origin
-    // Add other origins as needed
+    process.env.FRONTEND_CONSUMER_URL,
+    process.env.DEVELOPEMENT_MODE_CONSUMER
 ];
 
 const corsOptions = {
