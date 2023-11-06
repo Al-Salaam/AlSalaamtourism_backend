@@ -1,5 +1,5 @@
 const express = require('express');
-const { createActivity, getAllActivities, getActivityById, updateActivityById, deleteActivityById, createActivityReview, getAllRevirews, deleteActivityReview } = require('../controllers/activity');
+const { createActivity, getAllActivities, getActivityById, updateActivityById, deleteActivityById, createActivityReview, getAllRevirews, deleteActivityReview, activityWithLoadmore } = require('../controllers/activity');
 const { isAuthenticated, authorizeRole } = require('../middlewares/auth');
 const multipleUpload = require('../middlewares/multer');
 const { addToWishList, removeFromWishlist } = require('../controllers/wishlist');
@@ -8,7 +8,9 @@ const router = express.Router();
 
 router.route('/activity')
 .post(isAuthenticated, authorizeRole(['admin']), multipleUpload, createActivity)
-.get(getAllActivities);
+.get(getAllActivities)
+
+router.route('/activity/loadmore').get(activityWithLoadmore)
 
 router.route('/activity/:id')
 .get(getActivityById)

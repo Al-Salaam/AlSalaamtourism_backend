@@ -63,7 +63,13 @@ exports.getAllActivities = catchAsyncError(async (req, res, next) => {
     });
 });
 
-
+exports.activityWithLoadmore = catchAsyncError(async (req, res) => {
+    const alldataforloadmore = await Activity.find({})
+    res.status(200).json({
+        status: 'success',
+        data: alldataforloadmore
+    });
+})
 
 
 exports.getActivityById = catchAsyncError(async (req, res, next) => {
