@@ -22,7 +22,7 @@ dotenv.config({
 });
 
 
-// app.set('trust proxy', 1); // Trust proxy headers
+app.set('trust proxy', 1); // Trust proxy headers
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
@@ -34,7 +34,7 @@ app.use(session({
         httpOnly: true,
         sameSite: 'none', 
     },
-    // proxy: true, 
+    proxy: true, 
 }));
 
 app.use(cookieParser());
