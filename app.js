@@ -21,7 +21,6 @@ dotenv.config({
     path: './config/config.env'
 });
 
-
 app.set('trust proxy', 1); // Trust proxy headers
 
 app.use(session({
@@ -30,16 +29,16 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         maxAge: 15 * 24 * 60 * 60 * 1000,
-        secure: true,    
+        secure: true,
         httpOnly: true,
-        sameSite: 'none', 
+        sameSite: 'none',
     },
-    proxy: true, 
+    proxy: true,
 }));
 
 app.use(cookieParser());
 
-app.use(passport.authenticate('session'));
+// Corrected order of Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -52,7 +51,7 @@ app.use(morgan('tiny'));
 const allowedOrigins = [
     process.env.FRONTEND_DASHBOARD_URL,
     process.env.FRONTEND_CONSUMER_URL,
-    process.env.DEVELOPEMENT_MODE_CONSUMER
+    process.env.DEVELOPMENT_MODE_CONSUMER
 ];
 
 const corsOptions = {
@@ -69,7 +68,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-
 app.use('/api/v1', user);
 app.use('/api/v1', activity);
 app.use('/api/v1', pakage);
@@ -78,6 +76,8 @@ app.use('/api/v1', inquiry);
 app.use('/api/v1', booking);
 app.use('/api/v1', contact);
 
-app.use(ErrorMiddleware);
+
 
 module.exports = app;
+
+app.use(ErrorMiddleware);
