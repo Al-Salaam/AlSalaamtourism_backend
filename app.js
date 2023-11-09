@@ -49,14 +49,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('tiny'));
 
+const allowedOrigins = [
+    process.env.FRONTEND_DASHBOARD_URL,
+    process.env.FRONTEND_CONSUMER_URL,
+    process.env.DEVELOPEMENT_MODE_CONSUMER
+];
+
 const corsOptions = {
-    origin: "*", // Allow requests from any origin
+    origin: function (origin, callback) {
+        if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true
 };
 
 app.use(cors(corsOptions));
-
 
 
 app.use('/api/v1', user);
