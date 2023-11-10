@@ -78,7 +78,17 @@ const schema = new mongoose.Schema({
     itemType:{
         type: String,
         default: "activity"
-    }
+    },
+    adults: {
+        type: Number,
+    },
+    children: {
+        type: Number,
+        
+    },
+    infants: {
+        type: Number,
+    },
 
 }, {
     timestamps: true

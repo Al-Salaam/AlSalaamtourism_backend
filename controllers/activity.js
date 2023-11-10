@@ -8,7 +8,7 @@ const cloudinary = require('cloudinary');
 exports.createActivity = catchAsyncError(async (req, res, next) => {
     const {
         name, shortdescription, price, rating, description, keyinstructions, reservationpolicy, benifits,
-        duration, cancellation, groupsize, languages, highlights, included, excluded, categorey
+        duration, cancellation, groupsize, languages, highlights, included, excluded, categorey,adults,children,infants
     } = req.body;
 
     const files = req.files; // Note the use of req.files instead of req.file
@@ -23,7 +23,7 @@ exports.createActivity = catchAsyncError(async (req, res, next) => {
 
     const newActivity = await Activity.create({
         name, shortdescription, price, rating, description, keyinstructions, reservationpolicy, benifits,
-        duration, cancellation, groupsize, languages, highlights, included, excluded, categorey,
+        duration, cancellation, groupsize, languages, highlights, included, excluded, categorey,adults,children,infants,
         images: uploadedImages // Assign the uploaded images to the images field
     });
 
