@@ -17,9 +17,7 @@ const contact = require('./routers/contact');
 
 const app = express();
 
-dotenv.config({
-    path: './config/config.env'
-});
+dotenv.config();
 
 
 app.set('trust proxy', 1); // Trust proxy headers
