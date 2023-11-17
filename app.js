@@ -28,10 +28,11 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         maxAge: 15 * 24 * 60 * 60 * 1000,
-        secure: true,    // Set to true to require HTTPS for cookies
+        secure: true,
         httpOnly: true,
-        sameSite: 'none', // Set to 'none' for cross-site cookies
-    },
+        domain: "al-salaam-tourism-c93fa215ea59.herokuapp.com",
+        sameSite:"none",
+      },
     proxy: true, // Set to true when running behind a proxy
 }));
 
