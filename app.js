@@ -14,6 +14,7 @@ const passport = require('passport');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const contact = require('./routers/contact');
+const newsLetter = require('./routers/newLetter');
 
 const app = express();
 
@@ -30,7 +31,6 @@ app.use(session({
         maxAge: 15 * 24 * 60 * 60 * 1000,
         secure: true,
         httpOnly: true,
-        domain: "al-salaam-tourism-c93fa215ea59.herokuapp.com",
         sameSite:"none",
       },
     proxy: true, // Set to true when running behind a proxy
@@ -76,6 +76,7 @@ app.use('/api/v1', wishlist);
 app.use('/api/v1', inquiry);
 app.use('/api/v1', booking);
 app.use('/api/v1', contact);
+app.use('/api/v1', newsLetter);
 
 app.use(ErrorMiddleware);
 
