@@ -4,7 +4,7 @@ const Activity = require('../models/Activity');
 const Booking = require("../models/Booking");
 const ErrorHandler = require("../utils/errorHandler");
 
-const stripe = require('stripe')('sk_test_51NiXsqLx7xThqHSA0MtfpGnKjh9pB38YAXRXEGkDpszQRwYehYIlkPxGuwi2Q8gTRx1Bqb63pvwbkbovbSGFRuTS00GFXNrMO3');
+const stripe = require('stripe')('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');
 
 
 exports.createBooking = async (req, res, next) => {
