@@ -57,12 +57,14 @@ const allowedOrigins = [
 ];
 
 app.use(
-  cors({
-    origin: "https://tourism-dashboard-three.vercel.app/",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    exposedHeaders: ["set-cookie"],
-    credentials: true,
-  })
+  cors(
+//     {
+//     origin: "https://tourism-dashboard-three.vercel.app/",
+//     methods: ["GET", "POST", "PUT", "DELETE"],
+//     exposedHeaders: ["set-cookie"],
+//     credentials: true,
+//   }
+  )
 );
 
 app.use("/api/v1", user);
