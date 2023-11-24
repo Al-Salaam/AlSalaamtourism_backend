@@ -22,7 +22,7 @@ dotenv.config({
 });
 
 
-app.set('trust proxy', 1); // Trust proxy headers
+// app.set('trust proxy', 1); // Trust proxy headers
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
@@ -30,11 +30,11 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         maxAge: 15 * 24 * 60 * 60 * 1000,
-        secure: true,    // Set to true to require HTTPS for cookies
-        httpOnly: true,
-        sameSite: 'none', // Set to 'none' for cross-site cookies
+        // secure: true,    
+        // httpOnly: true,
+        // sameSite: 'none', 
     },
-    proxy: true, // Set to true when running behind a proxy
+    // proxy: true, 
 }));
 
 app.use(cookieParser());
@@ -50,9 +50,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan('tiny'));
 
 const allowedOrigins = [
-    process.env.FRONTEND_DASHBOARD_URL,
-    process.env.FRONTEND_CONSUMER_URL,
-    process.env.DEVELOPEMENT_MODE_CONSUMER
+    "http://localhost:3000",
+    "https://al-salaam-tourism-c93fa215ea59.herokuapp.com/"
+    // process.env.DEVELOPEMENT_MODE_CONSUMER,
+    // process.env.FRONTEND_DASHBOARD_URL
 ];
 
 const corsOptions = {
