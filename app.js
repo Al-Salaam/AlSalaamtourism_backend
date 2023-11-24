@@ -24,6 +24,7 @@ dotenv.config({
 app.set("trust proxy", 1);
 app.use(
   session({
+    name:"sid",
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
