@@ -31,13 +31,12 @@ app.use(
     proxy: true,
     cookie: {
       maxAge: 15 * 24 * 60 * 60 * 1000,
-      httpOnly: false,
+      httpOnly: true,
       secure: false,
-      sameSite: "none",
+      sameSite: "Lax",
     },
   })
 );
-
 app.use(cookieParser());
 
 app.use(passport.authenticate("session"));
@@ -52,16 +51,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("tiny"));
 
 const allowedOrigins = [
-  process.env.FRONTEND_DASHBOARD_URL, // Add your allowed origins here
+  process.env.FRONTEND_DASHBOARD_URL,
   process.env.FRONTEND_CONSUMER_URL,
   process.env.DEVELOPMENT_CONSUMER_URL,
   process.env.DEVELOPMENT_DASHBOARD_URL,
+  "https://your-frontend-domain.com", // Add your vercel frontend domain
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
       // Check if the request origin is in the allowedOrigins array
+
       if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
         callback(null, true);
       } else {
