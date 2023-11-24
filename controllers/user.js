@@ -61,12 +61,12 @@ exports.adminLogin = async (req, res, next) => {
 
     // Check if the user is an admin
     // if (user.role === "admin") {
-      // Log in the user
+    // Log in the user
     //   req.session.user = user; // Store user in the session or use your preferred authentication method
 
-      res
-        .status(200)
-        .json({ success: true, message: "Admin login successful" });
+    res
+      .status(200)
+      .json({ success: true, message: "Admin login successful", user: user });
     // } else {
     //   return next(new ErrorHandler("Unauthorized", 403));
     // }
