@@ -29,8 +29,8 @@ app.use(
     cookie: {
       maxAge: 15 * 24 * 60 * 60 * 1000,
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+    secure: true,
+    sameSite: 'none',
     },
   })
 );
@@ -57,14 +57,18 @@ const allowedOrigins = [
 ];
 
 app.use(
-  cors(
-//     {
-//     origin: "https://tourism-dashboard-three.vercel.app/",
-//     methods: ["GET", "POST", "PUT", "DELETE"],
-//     exposedHeaders: ["set-cookie"],
-//     credentials: true,
-//   }
-  )
+  cors({
+    origin: function (origin, callback) {
+      // Check if the request origin is in the allowedOrigins array
+      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
+  })
 );
 
 app.use("/api/v1", user);
