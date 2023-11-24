@@ -59,7 +59,7 @@ const allowedOrigins = [
   process.env.FRONTEND_CONSUMER_URL,
   process.env.DEVELOPMENT_CONSUMER_URL,
   process.env.DEVELOPMENT_DASHBOARD_URL,
-//   "https://your-frontend-domain.com", // Add your vercel frontend domain
+  "https://tourism-dashboard-three.vercel.app/", // Add your vercel frontend domain
 ];
 
 app.use(
