@@ -27,18 +27,19 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         maxAge: 15 * 24 * 60 * 60 * 1000,
-        // secure: process.env.NODE_ENV === "development" ? false : true,
-        // httpOnly: process.env.NODE_ENV === "development" ? false : true,
-        // sameSite: process.env.NODE_ENV === "development" ? false : "none"
+        secure: process.env.NODE_ENV === "development" ? false : true,
+        httpOnly: process.env.NODE_ENV === "development" ? false : true,
+        sameSite: process.env.NODE_ENV === "development" ? false : "none"
     },
 }));
 
-
+app.set("trust proxy", 1)
 app.use(cookieParser());
 
 app.use(passport.authenticate('session'));
 app.use(passport.initialize());
 app.use(passport.session());
+
 // app.enable("trust proxy");
 connectPassport();
 
