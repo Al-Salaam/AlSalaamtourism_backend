@@ -26,6 +26,7 @@ app.set("trust proxy", 1);
 app.use(cookieParser());
 app.use(
     session({
+        name:"mycookie",
       secret: process.env.SESSION_SECRET,
       resave: true,
       saveUninitialized: false,
@@ -35,7 +36,8 @@ app.use(
         httpOnly: true,
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : false, // *
         secure: true, // *
-        domain:"http://localhost:3000"
+        domain:"http://localhost:3000", 
+        path:"http://localhost:3000"
       },
       store: connectMongo.create({
         mongoUrl: process.env.MONGO_URL,
