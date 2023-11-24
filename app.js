@@ -21,6 +21,7 @@ dotenv.config({
   path: "./config/config.env",
 });
 
+app.set("trust proxy", 1);
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -35,7 +36,6 @@ app.use(
   })
 );
 
-app.set("trust proxy", 1);
 app.use(cookieParser());
 
 app.use(passport.authenticate("session"));
