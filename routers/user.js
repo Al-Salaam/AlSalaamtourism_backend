@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.route('/auth/register').post(registeration);
 router.post('/auth/login', passport.authenticate('local'), login);
-router.post('/auth/admin-login', passport.authenticate('local'), adminLogin);
+router.post('/auth/admin-login', adminLogin);
 router.get("/auth/google", passport.authenticate("google", {
     scope: ["profile"]
 }))
