@@ -22,7 +22,7 @@ dotenv.config();
 
 
 
-app.use(cors());
+app.use(cors({credentials:true, origin:true}));
 
 // app.set('trust proxy', 1); // Trust proxy headers
 
