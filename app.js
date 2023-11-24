@@ -34,7 +34,7 @@ app.use(
         maxAge: 15 * 24 * 60 * 60 * 1000,
         httpOnly: true,
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : false, // *
-        secure: process.env.NODE_ENV === 'production' // *
+        secure: true // *
       },
       store: connectMongo.create({
         mongoUrl: process.env.MONGO_URL,
