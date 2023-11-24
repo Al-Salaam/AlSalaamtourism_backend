@@ -11,6 +11,7 @@ const booking = require("./routers/booking");
 const { connectPassport } = require("./utils/Provider");
 const session = require("express-session");
 const passport = require("passport");
+const connectMongo = require('connect-mongo');
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const contact = require("./routers/contact");
@@ -24,20 +25,23 @@ dotenv.config({
 app.enable("trust proxy", 1);
 app.use(cookieParser());
 app.use(
-  session({
-    name: "sid",
-    secret: process.env.SESSION_SECRET,
-    resave: true,
-    saveUninitialized: false,
-    proxy: true,
-    cookie: {
-      maxAge: 15 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
-      secure: false,
-      sameSite: "Lax",
-    },
-  })
-);
+    expressSession({
+      secret: process.env.SESSION_SECRET,
+      resave: true,
+      saveUninitialized: false,
+      proxy: true, // *
+      cookie: {
+        maxAge: 15 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : false, // *
+        secure: process.env.NODE_ENV === 'production' // *
+      },
+      store: connectMongo.create({
+        mongoUrl: process.env.MONGO_URL,
+        ttl: 60 * 60
+      })
+    })
+  );
 
 app.use(passport.authenticate("session"));
 app.use(passport.initialize());
@@ -55,7 +59,7 @@ const allowedOrigins = [
   process.env.FRONTEND_CONSUMER_URL,
   process.env.DEVELOPMENT_CONSUMER_URL,
   process.env.DEVELOPMENT_DASHBOARD_URL,
-  "https://your-frontend-domain.com", // Add your vercel frontend domain
+//   "https://your-frontend-domain.com", // Add your vercel frontend domain
 ];
 
 app.use(
