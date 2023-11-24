@@ -24,15 +24,16 @@ dotenv.config({
 app.set("trust proxy", 1);
 app.use(
   session({
-    name:"sid",
+    name: "sid",
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    proxy: true,
     cookie: {
       maxAge: 15 * 24 * 60 * 60 * 1000,
       httpOnly: false,
-    secure: false,
-    sameSite: 'none',
+      secure: false,
+      sameSite: "none",
     },
   })
 );
