@@ -25,7 +25,7 @@ dotenv.config({
 app.enable("trust proxy", 1);
 app.use(cookieParser());
 app.use(
-    expressSession({
+    session({
       secret: process.env.SESSION_SECRET,
       resave: true,
       saveUninitialized: false,
