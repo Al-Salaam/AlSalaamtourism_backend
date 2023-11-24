@@ -33,11 +33,10 @@ app.use(
       proxy: true, // *
       cookie: {
         maxAge: 15 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
+        httpOnly: false,
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : false, // *
         secure: true, // *
-        domain:"http://localhost:3000", 
-        path:"http://localhost:3000"
+        domain:"http://localhost:3000",
       },
       store: connectMongo.create({
         mongoUrl: process.env.MONGO_URL,
