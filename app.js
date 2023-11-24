@@ -14,12 +14,11 @@ const passport = require('passport');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const contact = require('./routers/contact');
+const newsLetter = require('./routers/newLetter');
 
 const app = express();
 
-dotenv.config({
-    path: './config/config.env'
-});
+dotenv.config();
 
 
 // app.set('trust proxy', 1); // Trust proxy headers
@@ -30,11 +29,11 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         maxAge: 15 * 24 * 60 * 60 * 1000,
-        // secure: true,    
-        // httpOnly: true,
-        // sameSite: 'none', 
-    },
-    // proxy: true, 
+        secure: true,
+        httpOnly: true,
+        sameSite:"none",
+      },
+    proxy: true, // Set to true when running behind a proxy
 }));
 
 app.use(cookieParser());
@@ -78,6 +77,7 @@ app.use('/api/v1', wishlist);
 app.use('/api/v1', inquiry);
 app.use('/api/v1', booking);
 app.use('/api/v1', contact);
+app.use('/api/v1', newsLetter);
 
 app.use(ErrorMiddleware);
 
