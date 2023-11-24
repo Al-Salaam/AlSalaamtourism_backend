@@ -52,12 +52,12 @@ exports.adminLogin = async (req, res, next) => {
 
   try {
     // Find the user by email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email, password: password });
 
     // If the user doesn't exist, or the password is incorrect
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return next(new ErrorHandler("Invalid credentials", 401));
-    }
+    // if (!user || !(await bcrypt.compare(password, user.password))) {
+    //   return next(new ErrorHandler("Invalid credentials", 401));
+    // }
 
     // Check if the user is an admin
     if (user.role === "admin") {
