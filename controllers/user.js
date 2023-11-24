@@ -68,7 +68,7 @@ exports.adminLogin = (req, res, next) => {
 
         res
           .status(200)
-          .json({ success: true, message: "Admin login successful", user });
+          .json({ success: true, message: "Login successful", user });
       });
     } else {
       // If the user is not an admin, deny access
