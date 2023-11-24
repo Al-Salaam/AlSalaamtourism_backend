@@ -21,7 +21,7 @@ dotenv.config({
   path: "./config/config.env",
 });
 
-app.set("trust proxy", 1);
+app.enable("trust proxy", 1);
 app.use(
   session({
     name: "sid",
