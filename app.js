@@ -22,6 +22,7 @@ dotenv.config({
 });
 
 app.enable("trust proxy", 1);
+app.use(cookieParser());
 app.use(
   session({
     name: "sid",
@@ -37,7 +38,6 @@ app.use(
     },
   })
 );
-app.use(cookieParser());
 
 app.use(passport.authenticate("session"));
 app.use(passport.initialize());
