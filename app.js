@@ -63,19 +63,21 @@ const allowedOrigins = [
 ];
 
 app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Check if the request origin is in the allowedOrigins array
+  cors(
+//     {
+//     origin: function (origin, callback) {
+//       // Check if the request origin is in the allowedOrigins array
 
-      if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    credentials: true,
-  })
+//       if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+//         callback(null, true);
+//       } else {
+//         callback(new Error("Not allowed by CORS"));
+//       }
+//     },
+//     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+//     credentials: true,
+//   }
+  )
 );
 
 app.use("/api/v1", user);
