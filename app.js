@@ -26,7 +26,7 @@ app.use(
   session({
     name: "sid",
     secret: process.env.SESSION_SECRET,
-    resave: false,
+    resave: true,
     saveUninitialized: false,
     proxy: true,
     cookie: {
