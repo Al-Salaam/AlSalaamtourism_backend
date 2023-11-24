@@ -63,13 +63,13 @@ exports.adminLogin = async (req, res, next) => {
         if (user.role === "admin") {
             // Log in the user
             req.session.user = user; // Store user in the session or use your preferred authentication method
+
+            res
+                .status(200)
+                .json({ success: true, message: "Admin login successful", user: user });
+        } else {
+            return next(new ErrorHandler("Unauthorized", 403));
         }
-        res
-            .status(200)
-            .json({ success: true, message: "Admin login successful", user: user });
-        // } else {
-        //   return next(new ErrorHandler("Unauthorized", 403));
-        // }
     } catch (error) {
         return next(error);
     }
