@@ -28,8 +28,8 @@ app.use(
     saveUninitialized: false,
     cookie: {
       maxAge: 15 * 24 * 60 * 60 * 1000,
-      secure: true,
       httpOnly: true,
+      secure: true,
       sameSite: "none",
     },
   })
@@ -66,6 +66,7 @@ app.use(
         callback(new Error("Not allowed by CORS"));
       }
     },
+    exposedHeaders: ["set-cookie"],
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
   })
