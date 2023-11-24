@@ -21,33 +21,8 @@ const app = express();
 dotenv.config();
 
 
-app.use(function(req, res, next) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    next();
-});
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://al-salaam-tourism-c93fa215ea59.herokuapp.com/",
-  // process.env.DEVELOPEMENT_MODE_CONSUMER,
-  // process.env.FRONTEND_DASHBOARD_URL
-];
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
+app.use(cors());
 
 // app.set('trust proxy', 1); // Trust proxy headers
 
