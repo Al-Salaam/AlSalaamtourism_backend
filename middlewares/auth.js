@@ -1,13 +1,18 @@
+const User = require("../models/User");
 const ErrorHandler = require("../utils/errorHandler");
+const { catchAsyncError } = require("./catchAsyncError");
+const jwt = require('jsonwebtoken')
 
-
-exports.isAuthenticated = (req, res, next) => {
-    const token = req?.cookies["connect.sid"];
-    if(!token){
-        return next(new ErrorHandler("Not logged In", 401))
+exports.isAuthenticated = catchAsyncError(async (req, res, next) => {
+    const { token } = req.cookies;
+    if (!token) {
+        return next(new ErrorHandler("Not Login"), 401);
     }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = await User.findById(decoded._id).populate('role'); // Populate the 'role' field
     next();
-}
+});
 
 
 
