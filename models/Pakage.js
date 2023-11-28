@@ -7,7 +7,7 @@ const schema = new mongoose.Schema({
     description: {
         type: String
     },
-    keyIntructions: {
+    keyInstructions: {
         type: String
     },
     cancellationguide: {
@@ -25,7 +25,7 @@ const schema = new mongoose.Schema({
     cancellation: {
         type: String
     },
-    groupsize: {
+    groupSize: {
         type: String
     },
     languages: [String]
@@ -66,10 +66,31 @@ const schema = new mongoose.Schema({
     itemType: {
         type: String,
         default: "package"
-    }
-
+    },
+    slug: {
+        type: String,
+        unique: true
+    },
 }, {
     timestamps: true
 })
+
+schema.pre('save', function (next) {
+    this.slug = slugify(this.heading, { lower: true });
+    next();
+});
+
+function slugify(text, options) {
+    const separator = options && options.separator ? options.separator : '-';
+    const lower = options && options.lower ? true : false;
+    const textSlug = text.toString().toLowerCase()
+        .replace(/\s+/g, separator)
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, separator)
+        .replace(/^-+/, '')
+        .replace(/-+$/, '');
+
+    return lower ? textSlug : textSlug.charAt(0).toUpperCase() + textSlug.slice(1);
+}
 
 module.exports = mongoose.model('Pakage', schema)

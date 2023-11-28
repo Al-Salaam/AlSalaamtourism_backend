@@ -14,7 +14,7 @@ exports.createPakage = catchAsyncError(async (req, res, next) => {
     const imagePromises = files.map(async (file) => {
         const fileUri = getDataUri(file);
         const mycloud = await cloudinary.v2.uploader.upload(fileUri.content);
-        return { public_id: mycloud.public_id, url: mycloud.secure_url };
+        return { public_id: mycloud.public_id, url: mycloud.url };
     });
 
     const uploadedImages = await Promise.all(imagePromises);
@@ -68,6 +68,19 @@ exports.getPakageById = catchAsyncError(async (req, res, next) => {
         pakage
     })
 })
+
+exports.getPakagesBySlug = catchAsyncError(async (req, res, next) => {
+    const pakage = await Pakage.findOne({ slug: req.params.slug });
+
+    if (!pakage) {
+        return next(new ErrorHandler("pakage not found", 404));
+    }
+
+    res.status(200).json({
+        status: 'success',
+        pakage
+    });
+});
 
 exports.updatePakageById = catchAsyncError(async (req, res, next) => {
     const pakageId = req.params.id;
