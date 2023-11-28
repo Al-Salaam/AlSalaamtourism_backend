@@ -6,7 +6,7 @@ const ErrorHandler = require("../utils/errorHandler");
 exports.createPakage = catchAsyncError(async (req, res, next) => {
     const {
         heading, description, keyIntructions, cancellationguide, childpolicy,
-        tourbenifits, duration, cancellation, groupsize, languages
+        tourbenifits, duration, cancellation, groupSize, languages
     } = req.body;
 
     const files = req.files; // Note the use of req.files instead of req.file
@@ -21,7 +21,7 @@ exports.createPakage = catchAsyncError(async (req, res, next) => {
 
     const newPakage = await Pakage.create({
         heading, description, keyIntructions, cancellationguide, childpolicy,
-        tourbenifits, duration, cancellation, groupsize, languages,
+        tourbenifits, duration, cancellation, groupSize, languages,
         images: uploadedImages // Assign the uploaded images to the images field
     });
 
@@ -86,7 +86,7 @@ exports.updatePakageById = catchAsyncError(async (req, res, next) => {
     const pakageId = req.params.id;
     const {
         heading, description, keyIntructions, cancellationguide, childpolicy,
-        tourbenifits, duration, cancellation, groupsize, languages
+        tourbenifits, duration, cancellation, groupSize, languages
     } = req.body;
 
     // Check if the pakage exists
@@ -115,7 +115,7 @@ exports.updatePakageById = catchAsyncError(async (req, res, next) => {
     existingPakage.tourbenifits = tourbenifits;
     existingPakage.duration = duration;
     existingPakage.cancellation = cancellation;
-    existingPakage.groupsize = groupsize;
+    existingPakage.groupSize = groupSize;
     existingPakage.languages = languages;
 
     // Update images if new images were uploaded

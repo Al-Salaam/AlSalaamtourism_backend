@@ -8,8 +8,8 @@ const cloudinary = require('cloudinary');
 
 exports.createActivity = catchAsyncError(async (req, res, next) => {
     const {
-        name, shortdescription, price, rating, description, keyinstructions, reservationpolicy, benifits,
-        duration, cancellation, groupsize, languages, highlights, included, excluded, categorey,adults,children,infants
+        name, shortDescription, price, rating, description, keyInstructions, reservationPolicy, benifits,
+        duration, cancellation, groupSize, languages, highlights, included, excluded, categorey,adults,children,infants
     } = req.body;
 
     const files = req.files; // Note the use of req.files instead of req.file
@@ -23,8 +23,8 @@ exports.createActivity = catchAsyncError(async (req, res, next) => {
     const uploadedImages = await Promise.all(imagePromises);
 
     const newActivity = await Activity.create({
-        name, shortdescription, price, rating, description, keyinstructions, reservationpolicy, benifits,
-        duration, cancellation, groupsize, languages, highlights, included, excluded, categorey,adults,children,infants,
+        name, shortDescription, price, rating, description, keyInstructions, reservationPolicy, benifits,
+        duration, cancellation, groupSize, languages, highlights, included, excluded, categorey,adults,children,infants,
         images: uploadedImages // Assign the uploaded images to the images field
     });
 
@@ -152,8 +152,8 @@ exports.getActivityBySlug = catchAsyncError(async (req, res, next) => {
 exports.updateActivityById = catchAsyncError(async (req, res, next) => {
     const activityId = req.params.id;
     const {
-        name, shortdescription, price, description, keyinstructions, reservationpolicy, benifits,
-        duration, cancellation, groupsize, languages, highlights, included, excluded, categorey, adults,children,infants
+        name, shortDescription, price, description, keyInstructions, reservationPolicy, benifits,
+        duration, cancellation, groupSize, languages, highlights, included, excluded, categorey, adults,children,infants
     } = req.body;
 
     // Check if the activity exists
@@ -175,15 +175,15 @@ exports.updateActivityById = catchAsyncError(async (req, res, next) => {
 
     // Update activity fields
     existingActivity.name = name;
-    existingActivity.shortdescription = shortdescription;
+    existingActivity.shortDescription = shortDescription;
     existingActivity.price = price;
     existingActivity.description = description;
-    existingActivity.keyinstructions = keyinstructions;
-    existingActivity.reservationpolicy = reservationpolicy;
+    existingActivity.keyInstructions = keyInstructions;
+    existingActivity.reservationPolicy = reservationPolicy;
     existingActivity.benifits = benifits;
     existingActivity.duration = duration;
     existingActivity.cancellation = cancellation;
-    existingActivity.groupsize = groupsize;
+    existingActivity.groupSize = groupSize;
     existingActivity.languages = languages;
     existingActivity.highlights = highlights;
     existingActivity.included = included;

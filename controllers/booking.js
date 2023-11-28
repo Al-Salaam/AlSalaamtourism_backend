@@ -43,7 +43,7 @@ exports.createBooking = async (req, res, next) => {
                         product_data: {
                             name: activity.name,
                             images: [activity.images[0].url],
-                            description: activity.shortdescription,
+                            description: activity.shortDescription,
                             metadata: {
                                 id: activity._id
                             }

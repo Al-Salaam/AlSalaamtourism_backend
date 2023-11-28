@@ -115,16 +115,16 @@ exports.convertToCamelCase = (req, res, next) => {
             const updatedActivities = activities.map((activity) => {
                 return {
                     ...activity,
-                    shortDescription: activity.shortdescription,
-                    keyInstructions: activity.keyinstructions,
-                    reservationPolicy: activity.reservationpolicy,
-                    groupSize: activity.groupsize,
+                    shortDescription: activity.shortDescription,
+                    keyInstructions: activity.keyInstructions,
+                    reservationPolicy: activity.reservationPolicy,
+                    groupSize: activity.groupSize,
                     // Add other fields as needed
                 };
             });
 
             // Remove the old fields
-            const sanitizedActivities = updatedActivities.map(({ shortdescription, keyinstructions, reservationpolicy, groupsize, ...rest }) => rest);
+            const sanitizedActivities = updatedActivities.map(({ shortDescription, keyInstructions, reservationPolicy, groupSize, ...rest }) => rest);
 
             // Convert the updated activities back to JSON
             const modifiedJson = JSON.stringify(sanitizedActivities, null, 2);
