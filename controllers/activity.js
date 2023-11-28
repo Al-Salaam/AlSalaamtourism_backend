@@ -3,12 +3,13 @@ const Activity = require("../models/Activity");
 const getDataUri = require("../utils/dataUri");
 const ErrorHandler = require("../utils/errorHandler");
 const cloudinary = require('cloudinary');
-
+// const fs = require('fs');
+// const path = require('path');
 
 exports.createActivity = catchAsyncError(async (req, res, next) => {
     const {
-        name, shortdescription, price, rating, description, keyinstructions, reservationpolicy, benifits,
-        duration, cancellation, groupsize, languages, highlights, included, excluded, categorey,adults,children,infants
+        name, shortDescription, price, rating, description, keyInstructions, reservationPolicy, benifits,
+        duration, cancellation, groupSize, languages, highlights, included, excluded, categorey,adults,children,infants
     } = req.body;
 
     const files = req.files; // Note the use of req.files instead of req.file
@@ -16,14 +17,14 @@ exports.createActivity = catchAsyncError(async (req, res, next) => {
     const imagePromises = files.map(async (file) => {
         const fileUri = getDataUri(file);
         const mycloud = await cloudinary.v2.uploader.upload(fileUri.content);
-        return { public_id: mycloud.public_id, url: mycloud.secure_url };
+        return { public_id: mycloud.public_id, url: mycloud.url };
     });
 
     const uploadedImages = await Promise.all(imagePromises);
 
     const newActivity = await Activity.create({
-        name, shortdescription, price, rating, description, keyinstructions, reservationpolicy, benifits,
-        duration, cancellation, groupsize, languages, highlights, included, excluded, categorey,adults,children,infants,
+        name, shortDescription, price, rating, description, keyInstructions, reservationPolicy, benifits,
+        duration, cancellation, groupSize, languages, highlights, included, excluded, categorey,adults,children,infants,
         images: uploadedImages // Assign the uploaded images to the images field
     });
 
@@ -35,6 +36,53 @@ exports.createActivity = catchAsyncError(async (req, res, next) => {
         }
     });
 });
+
+// exports.createActivity = async (req, res, next) => {
+//     const jsonFileName = 'tourism.activities.json';
+
+//     try {
+//         // Assuming your JSON file is in the root directory
+//         const jsonFilePath = path.join(__dirname, '..', 'utils', jsonFileName);
+//         const activitiesData = require(jsonFilePath);
+
+//         // Create activities from the data
+//         const createdActivities = await Promise.all(
+//             activitiesData.map(async (activityData) => {
+//                 // Adjust field names according to your model
+//                 const {
+//                     name, shortDescription, price, rating, description, keyInstructions, reservationPolicy, benefits,
+//                     duration, cancellation, groupSize, languages, highlights, included, excluded, category, adults, children, infants, images
+//                 } = activityData;
+
+//                 // Process images if needed
+
+//                 // Remove _id from images array to avoid CastError
+//                 const sanitizedImages = images.map(image => ({ url: image.url }));
+
+//                 // Create the activity
+//                 const newActivity = await Activity.create({
+//                     name, shortDescription, price, rating, description, keyInstructions, reservationPolicy, benefits,
+//                     duration, cancellation, groupSize, languages, highlights, included, excluded, category, adults, children, infants,
+//                     images: sanitizedImages
+//                 });
+
+//                 return newActivity;
+//             })
+//         );
+
+//         res.status(201).json({
+//             status: 'success',
+//             message: 'Successfully created activities',
+//             data: {
+//                 activities: createdActivities
+//             }
+//         });
+//     } catch (error) {
+//         console.error('Error creating activities:', error);
+//         res.status(500).json({ success: false, message: 'Internal Server Error' });
+//     }
+// };
+
 
 
 exports.getAllActivities = catchAsyncError(async (req, res, next) => {
@@ -86,11 +134,26 @@ exports.getActivityById = catchAsyncError(async (req, res, next) => {
 });
 
 
+exports.getActivityBySlug = catchAsyncError(async (req, res, next) => {
+    const activity = await Activity.findOne({ slug: req.params.slug });
+
+    if (!activity) {
+        return next(new ErrorHandler("Activity not found", 404));
+    }
+
+    res.status(200).json({
+        status: 'success',
+        activity
+    });
+});
+
+
+
 exports.updateActivityById = catchAsyncError(async (req, res, next) => {
     const activityId = req.params.id;
     const {
-        name, shortdescription, price, description, keyinstructions, reservationpolicy, benifits,
-        duration, cancellation, groupsize, languages, highlights, included, excluded, categorey
+        name, shortDescription, price, description, keyInstructions, reservationPolicy, benifits,
+        duration, cancellation, groupSize, languages, highlights, included, excluded, categorey, adults,children,infants
     } = req.body;
 
     // Check if the activity exists
@@ -112,21 +175,23 @@ exports.updateActivityById = catchAsyncError(async (req, res, next) => {
 
     // Update activity fields
     existingActivity.name = name;
-    existingActivity.shortdescription = shortdescription;
+    existingActivity.shortDescription = shortDescription;
     existingActivity.price = price;
     existingActivity.description = description;
-    existingActivity.keyinstructions = keyinstructions;
-    existingActivity.reservationpolicy = reservationpolicy;
+    existingActivity.keyInstructions = keyInstructions;
+    existingActivity.reservationPolicy = reservationPolicy;
     existingActivity.benifits = benifits;
     existingActivity.duration = duration;
     existingActivity.cancellation = cancellation;
-    existingActivity.groupsize = groupsize;
+    existingActivity.groupSize = groupSize;
     existingActivity.languages = languages;
     existingActivity.highlights = highlights;
     existingActivity.included = included;
     existingActivity.excluded = excluded;
     existingActivity.categorey = categorey;
-
+    existingActivity.adults = adults;
+    existingActivity.children = children;
+    existingActivity.infants = infants;
     // Update images if new images were uploaded
     if (uploadedImages.length > 0) {
         existingActivity.images = uploadedImages;

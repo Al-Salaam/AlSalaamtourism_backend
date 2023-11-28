@@ -6,7 +6,7 @@ const ErrorHandler = require("../utils/errorHandler");
 exports.createPakage = catchAsyncError(async (req, res, next) => {
     const {
         heading, description, keyIntructions, cancellationguide, childpolicy,
-        tourbenifits, duration, cancellation, groupsize, languages
+        tourbenifits, duration, cancellation, groupSize, languages
     } = req.body;
 
     const files = req.files; // Note the use of req.files instead of req.file
@@ -14,14 +14,14 @@ exports.createPakage = catchAsyncError(async (req, res, next) => {
     const imagePromises = files.map(async (file) => {
         const fileUri = getDataUri(file);
         const mycloud = await cloudinary.v2.uploader.upload(fileUri.content);
-        return { public_id: mycloud.public_id, url: mycloud.secure_url };
+        return { public_id: mycloud.public_id, url: mycloud.url };
     });
 
     const uploadedImages = await Promise.all(imagePromises);
 
     const newPakage = await Pakage.create({
         heading, description, keyIntructions, cancellationguide, childpolicy,
-        tourbenifits, duration, cancellation, groupsize, languages,
+        tourbenifits, duration, cancellation, groupSize, languages,
         images: uploadedImages // Assign the uploaded images to the images field
     });
 
@@ -69,11 +69,24 @@ exports.getPakageById = catchAsyncError(async (req, res, next) => {
     })
 })
 
+exports.getPakagesBySlug = catchAsyncError(async (req, res, next) => {
+    const pakage = await Pakage.findOne({ slug: req.params.slug });
+
+    if (!pakage) {
+        return next(new ErrorHandler("pakage not found", 404));
+    }
+
+    res.status(200).json({
+        status: 'success',
+        pakage
+    });
+});
+
 exports.updatePakageById = catchAsyncError(async (req, res, next) => {
     const pakageId = req.params.id;
     const {
         heading, description, keyIntructions, cancellationguide, childpolicy,
-        tourbenifits, duration, cancellation, groupsize, languages
+        tourbenifits, duration, cancellation, groupSize, languages
     } = req.body;
 
     // Check if the pakage exists
@@ -102,7 +115,7 @@ exports.updatePakageById = catchAsyncError(async (req, res, next) => {
     existingPakage.tourbenifits = tourbenifits;
     existingPakage.duration = duration;
     existingPakage.cancellation = cancellation;
-    existingPakage.groupsize = groupsize;
+    existingPakage.groupSize = groupSize;
     existingPakage.languages = languages;
 
     // Update images if new images were uploaded

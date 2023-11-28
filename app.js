@@ -15,7 +15,7 @@ const connectMongo = require('connect-mongo');
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const contact = require("./routers/contact");
-
+const scripts = require('./routers/script');
 const app = express();
 dotenv.config();
 
@@ -91,6 +91,7 @@ app.use("/api/v1", wishlist);
 app.use("/api/v1", inquiry);
 app.use("/api/v1", booking);
 app.use("/api/v1", contact);
+app.use("/api/v1", scripts)
 module.exports = app;
 
 app.use(ErrorMiddleware);
