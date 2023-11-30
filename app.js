@@ -8,10 +8,7 @@ const pakage = require("./routers/pakage");
 const inquiry = require("./routers/inquiry");
 const wishlist = require("./routers/wishlist");
 const booking = require("./routers/booking");
-const { connectPassport } = require("./utils/Provider");
-const session = require("express-session");
-const passport = require("passport");
-const connectMongo = require('connect-mongo');
+
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const contact = require("./routers/contact");
@@ -19,39 +16,6 @@ const scripts = require('./routers/script');
 const app = express();
 dotenv.config();
 
-// dotenv.config({
-//   path: "./config/config.env",
-// });
-
-// app.set("trust proxy", 1);
-// app.use(cookieParser());
-// app.use(
-//     session({
-//         name:"mycookie",
-//       secret: process.env.SESSION_SECRET,
-//       resave: true,
-//       saveUninitialized: false,
-//       proxy: true, // *
-//       cookie: {
-//         maxAge: 15 * 24 * 60 * 60 * 1000,
-//         httpOnly: false,
-//         sameSite: process.env.NODE_ENV === 'production' ? 'none' : false, // *
-//         secure: true, // *
-//         domain:"http://localhost:3000",
-//       },
-//       store: connectMongo.create({
-//         mongoUrl: process.env.MONGO_URL,
-//         ttl: 60 * 60
-//       })
-//     })
-//   );
-
-// app.use(passport.authenticate("session"));
-// app.use(passport.initialize());
-// app.use(passport.session());
-
-// app.enable("trust proxy");
-// connectPassport();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
