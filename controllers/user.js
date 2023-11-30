@@ -1,14 +1,14 @@
-const passport = require("passport");
 const { catchAsyncError } = require("../middlewares/catchAsyncError");
 const User = require("../models/User");
 const ErrorHandler = require("../utils/errorHandler");
-const bcrypt = require("bcrypt");
+const createTransporter = require("../utils/nodemailer");
+const crypto = require('crypto');
 const { sendToken } = require("../utils/sendToken");
 exports.registeration = catchAsyncError(async (req, res, next) => {
   const { name, username, email, password } = req.body;
-  const existingUser = await User.findOne({ email });
+  const existingUser = await User.findOne({ $or: [{ username }, { email }] });
   if (existingUser) {
-    return next(new ErrorHandler("User already exist ", 400));
+    return next(new ErrorHandler("User with email or username already exists", 409));
   }
   const newUser = new User({
     name,
@@ -80,67 +80,6 @@ exports.adminLogin = catchAsyncError(async (req, res, next) => {
     sendToken(res, user, "Admin login successful");
 })
 
-// exports.login = (req, res, next) => {
-//   passport.authenticate("local", (err, user, info) => {
-//     if (err) {
-//       return next(err);
-//     }
-
-//     if (!user) {
-//       return next(new ErrorHandler(info.message, 401));
-//     }
-
-//     req.logIn(user, (err) => {
-//       if (err) {
-//         return next(err);
-//       }
-
-//       res
-//         .status(200)
-//         .json({ success: true, message: "Login successfully", user });
-//     });
-//   })(req, res, next);
-// };
-
-// // admin login
-// exports.adminLogin = (req, res, next) => {
-//   passport.authenticate("local", async (err, user, info) => {
-//     if (err) {
-//       return next(err);
-//     }
-
-//     if (!user) {
-//       // Handle incorrect credentials here
-//       return next(new ErrorHandler("Invalid credentials", 401));
-//     }
-
-//     // Check if the user is an admin
-//     if (user.role === "admin") {
-//       // If the user is an admin, log them in
-//       req.logIn(user, (err) => {
-//         if (err) {
-//           return next(err);
-//         }
-
-//         res
-//           .status(200)
-//           .json({ success: true, message: "Login successful", user });
-//       });
-//     } else {
-//       // If the user is not an admin, deny access
-//       return next(new ErrorHandler("Only admin can login", 401));
-//     }
-//   })(req, res, next);
-// };
-
-// exports.getMyProfile = (req, res, next) => {
-//   res.status(200).json({
-//     success: true,
-//     user: req.user,
-//   });
-// };
-
-// admin get all users
 exports.getAllUsers = catchAsyncError(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1; // Current page number (default to 1 if not specified)
   const limit = parseInt(req.query.limit) || 8; // Number of activities per page (default to 10 if not specified)
@@ -179,49 +118,6 @@ exports.changePassword = catchAsyncError(async (req, res, next) => {
   });
 });
 
-// exports.changePassword = async (req, res, next) => {
-//   try {
-//     const userId = req.user._id; // Assuming your User model has an '_id' field for the user's ID
-//     const { oldPassword, newPassword } = req.body; // Extract oldPassword and newPassword from the request body
-
-//     // Check if both oldPassword and newPassword are provided in the request body
-//     if (!oldPassword || !newPassword) {
-//       return next(
-//         new ErrorHandler(
-//           "Both old password and new password are required.",
-//           400
-//         )
-//       );
-//     }
-
-//     // Find the user by ID
-//     const user = await User.findById(userId);
-
-//     if (!user) {
-//       return next(new ErrorHandler("User not found", 404));
-//     }
-
-//     // Compare the oldPassword provided in the request with the hashed password in the database
-//     const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
-
-//     if (!isPasswordValid) {
-//       return next(new ErrorHandler("Invalid old password", 401));
-//     }
-
-//     // Hash the new password
-//     const saltRounds = 10;
-//     const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
-
-//     // Update the user's password in the database
-//     await User.findByIdAndUpdate(userId, { password: hashedPassword });
-
-//     res.status(200).json({ message: "Password changed successfully" });
-//   } catch (error) {
-//     console.error(error); // Log the error for debugging purposes
-//     res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
-
 exports.logout = catchAsyncError(async (req, res, next) => {
   if (!req.cookies.token) {
     return next(new ErrorHandler("You are not logged in", 401));
@@ -240,19 +136,7 @@ exports.logout = catchAsyncError(async (req, res, next) => {
     });
 });
 
-// exports.logout = (req, res, next) => {
-//   req?.session?.destroy((err) => {
-//     if (err) return next(err);
-//     res.clearCookie("connect.sid", {
-//       secure: true,
-//       httpOnly: true,
-//       sameSite: "none",
-//     });
-//     res.status(200).json({
-//       message: "logout Successfully",
-//     });
-//   });
-// };
+
 
 exports.addLocationInformation = catchAsyncError(async (req, res, next) => {
   const { homeairport, address, city, state, zipcode, country } = req.body;
@@ -347,3 +231,57 @@ exports.deleteAllUsers = catchAsyncError(async (req, res, next) => {
     message: "Deleted Successfully",
   });
 });
+
+
+exports.forgetPassword = catchAsyncError(async (req, res, next) => {
+  const {email} = req.body;
+  const user = await User.findOne({email});
+  if(!user){
+    return next(new ErrorHandler("user not found", 400))
+  }
+  const resetToken = await user.getResetToken();
+  await user.save();
+  const url = `${process.env.FRONTEND_CONSUMER_URL}/resetpassword/${resetToken}`
+  const message = `Click on the link to reset your password. ${url}, if you have not request then please ignore`
+  const mailOptions = {
+    to: user.email,
+    subject: 'Reset Password',
+    text: message
+  };
+  const transporter = createTransporter();
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log('Error sending email:', error);
+    } else {
+      console.log('Email sent:', info.response);
+    }
+  });
+  res.status(200).json({
+    success: true,
+    url: url,
+    message:`Reset token has been sent to ${user.email}`
+})
+
+})
+
+exports.resetPassword = catchAsyncError(async (req, res, next) => {
+  const {token} = req.params;
+  const resetPasswordToken = crypto.createHash("sha256").update(token).digest("hex");
+  const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire:{
+          $gt:Date.now()
+      }
+  })
+  if(!user){
+      return next(new ErrorHandler("Token is invalid or has been expired"))
+  }
+  user.password = req.body.password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+  await user.save();
+  res.status(200).json({
+      success: true,
+      message:"Password changed sucessfully"
+  })
+})
