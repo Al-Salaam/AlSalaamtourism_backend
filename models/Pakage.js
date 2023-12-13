@@ -40,8 +40,27 @@ const schema = new mongoose.Schema({
         url: {
             type: String
         }
-    }]
-    ,
+    }],
+    dayDeals:[
+        {
+            heading:{
+                type: String,
+            },
+            description:{
+                type: String,
+            }
+        }
+    ],
+    nigthDeals:[
+        {
+            heading:{
+                type: String,
+            },
+            description:{
+                type: String,
+            }
+        }
+    ],
     reviews: [
         {
             user: {

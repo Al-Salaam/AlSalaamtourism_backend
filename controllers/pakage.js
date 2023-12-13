@@ -6,7 +6,7 @@ const ErrorHandler = require("../utils/errorHandler");
 exports.createPakage = catchAsyncError(async (req, res, next) => {
     const {
         heading, description, keyIntructions, cancellationguide, childpolicy,
-        tourbenifits, duration, cancellation, groupSize, languages
+        tourbenifits, duration, cancellation, groupSize, languages, dayDeals = [], nightDeals = []
     } = req.body;
 
     const files = req.files; // Note the use of req.files instead of req.file
@@ -21,7 +21,15 @@ exports.createPakage = catchAsyncError(async (req, res, next) => {
 
     const newPakage = await Pakage.create({
         heading, description, keyIntructions, cancellationguide, childpolicy,
-        tourbenifits, duration, cancellation, groupSize, languages,
+        tourbenifits, duration, cancellation, groupSize, languages, 
+        dayDeals: Array.isArray(dayDeals) ? dayDeals.map(deal => ({
+            heading: deal.heading,
+            description: deal.description
+        })) : [],
+        nightDeals: Array.isArray(nightDeals) ? nightDeals.map(deal => ({
+            heading: deal.heading,
+            description: deal.description
+        })) : [],
         images: uploadedImages // Assign the uploaded images to the images field
     });
 
