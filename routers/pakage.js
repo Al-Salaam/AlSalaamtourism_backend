@@ -17,7 +17,11 @@ const multipleUpload = require("../middlewares/multer");
 // Pakage Routes
 router
   .route("/pakages")
-  .post(isAuthenticated, authorizeRole(["admin"]), multipleUpload, createPakage)
+  .post(
+    isAuthenticated,
+     authorizeRole(["admin"]),
+      multipleUpload,
+       createPakage)
   .get(getAllPakages);
 
 router
