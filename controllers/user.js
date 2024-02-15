@@ -2,13 +2,16 @@ const { catchAsyncError } = require("../middlewares/catchAsyncError");
 const User = require("../models/User");
 const ErrorHandler = require("../utils/errorHandler");
 const createTransporter = require("../utils/nodemailer");
-const crypto = require('crypto');
-const { sendToken } = require("../utils/sendToken");
+const crypto = require("crypto");
+const jwt = require('jsonwebtoken')
+
 exports.registeration = catchAsyncError(async (req, res, next) => {
   const { name, username, email, password } = req.body;
   const existingUser = await User.findOne({ $or: [{ username }, { email }] });
   if (existingUser) {
-    return next(new ErrorHandler("User with email or username already exists", 409));
+    return next(
+      new ErrorHandler("User with email or username already exists", 409)
+    );
   }
   const newUser = new User({
     name,
@@ -35,7 +38,6 @@ exports.login = catchAsyncError(async (req, res, next) => {
   }
   const user = await User.findOne({ email }).select("+password");
 
-  
   if (!user) {
     return next(new ErrorHandler("Incorrect email or password", 401));
   }
@@ -43,14 +45,89 @@ exports.login = catchAsyncError(async (req, res, next) => {
   if (!isMatch) {
     return next(new ErrorHandler("Incorrect email or password", 401));
   }
-  sendToken(res, user, `Login Successfully`, 200);
+
+  // Create token data
+  const tokenData = {
+    _id: user._id,
+    email: user.email,
+  };
+
+  // JWT Token
+  const accessToken = jwt.sign(tokenData, process.env.JWT_SECRET, {
+    expiresIn: "15d",
+  });
+
+  // Refresh Token
+  const refreshToken = jwt.sign(tokenData, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: "30d",
+  });
+
+  // Save refreshToken in the user model
+  user.refreshToken = refreshToken;
+  await user.save({ validateBeforeSave: false });
+
+  const accessTokenOptions = {
+    expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // Set the cookie expiration time to 15 days from now
+    httpOnly: true, // Make the cookie accessible only through HTTP(S) requests, not JavaScript
+    secure: true, // Send the cookie only over secure (HTTPS) connections
+    sameSite: "none", // Allow cross-site requests to include the cookie (required for third-party authentication)
+  };
+  const refreshTokenOptions = {
+    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  };
+
+  res.cookie("access_token", accessToken, accessTokenOptions);
+  res.cookie("refresh_token", refreshToken, refreshTokenOptions);
+
+  return res.status(200).json({
+    message: "Login successfully",
+    user,
+    accessToken,
+    refreshToken,
+  });
+});
+
+
+
+exports.refresh_Token = catchAsyncError(async (req, res, next) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
+      return next(new ErrorHandler("Refresh Token is required", 400));
+  }
+
+  try {
+      const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+      const user = await User.findById(decoded._id);
+
+      if (!user || user.refreshToken !== refreshToken) {
+          return next(new ErrorHandler("Invalid Refresh Token", 400));
+      }
+
+      const newToken = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "15d" });
+
+      res.status(200).json({
+          success: true,
+          accessToken: newToken
+      });
+  } catch (error) {
+      return next(new ErrorHandler("Invalid Refresh Token", 400));
+  }
 });
 
 exports.getMyprofile = catchAsyncError(async (req, res, next) => {
+
   const user = await User.findById(req.user._id);
+  
+  if (!user) {
+      return next(new ErrorHandler("User not found", 404));
+  }
+
   res.status(200).json({
-    success: true,
-    user,
+      success: true,
+      user,
   });
 });
 
@@ -62,23 +139,72 @@ exports.adminLogin = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler("Please provide email and password", 400));
   }
 
-  const user = await User.findOne({ email }).select('+password');
+  const user = await User.findOne({ email }).select("+password");
 
-    // Check if the user exists and has the 'admin' role
-    if (!user || user.role !== 'admin') {
-      return next(new ErrorHandler("Invalid credentials", 401));
-    }
+  // Check if the user exists
+  if (!user) {
+    return next(new ErrorHandler("Invalid credentials", 401));
+  }
 
-    // Check if the provided password matches the stored password
-    const isPasswordMatch = await user.comparePassword(password);
+  // Check if the user has the 'admin' role
+  if (user.role !== "admin") {
+    return next(new ErrorHandler("Invalid credentials", 401));
+  }
 
-    if (!isPasswordMatch) {
-      return next(new ErrorHandler("Invalid credentials", 401));
-    }
+  // Check if the provided password matches the stored password
+  const isPasswordMatch = await user.comparePassword(password);
 
-    // Send token if authentication is successful
-    sendToken(res, user, "Admin login successful");
-})
+  if (!isPasswordMatch) {
+    return next(new ErrorHandler("Invalid credentials", 401));
+  }
+
+  // Create token data
+  const tokenData = {
+    _id: user._id,
+    email: user.email,
+    role: user.role // Include the role in the token data
+  };
+
+  // JWT Token
+  const accessToken = jwt.sign(tokenData, process.env.JWT_SECRET, {
+    expiresIn: "15d",
+  });
+
+  // Refresh Token
+  const refreshToken = jwt.sign(tokenData, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: "30d",
+  });
+
+  // Save refreshToken in the user model
+  user.refreshToken = refreshToken;
+  await user.save({ validateBeforeSave: false });
+
+  const accessTokenOptions = {
+    expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // Set the cookie expiration time to 15 days from now
+    httpOnly: true, // Make the cookie accessible only through HTTP(S) requests, not JavaScript
+    secure: true, // Send the cookie only over secure (HTTPS) connections
+    sameSite: "none", // Allow cross-site requests to include the cookie (required for third-party authentication)
+  };
+  const refreshTokenOptions = {
+    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  };
+
+  // Set cookies in the response
+  res.cookie("access_token", accessToken, accessTokenOptions);
+  res.cookie("refresh_token", refreshToken, refreshTokenOptions);
+
+  // Send response with tokens
+  return res.status(200).json({
+    message: "Admin login successful",
+    user,
+    accessToken,
+    refreshToken,
+  });
+});
+
 
 exports.getAllUsers = catchAsyncError(async (req, res, next) => {
   const page = parseInt(req.query.page) || 1; // Current page number (default to 1 if not specified)
@@ -101,7 +227,7 @@ exports.getAllUsers = catchAsyncError(async (req, res, next) => {
 
 exports.changePassword = catchAsyncError(async (req, res, next) => {
   const { oldPassword, newPassword } = req.body;
-  if (!oldPassword || !newPassword ) {
+  if (!oldPassword || !newPassword) {
     return next(new ErrorHandler("Please enter all fields", 400));
   }
 
@@ -118,24 +244,71 @@ exports.changePassword = catchAsyncError(async (req, res, next) => {
   });
 });
 
+// exports.logout = catchAsyncError(async (req, res, next) => {
+//   if (!req.cookies.access_token && !req.cookies.refresh_token) {
+//     return next(new ErrorHandler("You are not logged in", 401));
+//   }
+//   res
+//     .status(200)
+//     .cookie("access_token", null, {
+//       expires: new Date(Date.now()),
+//       httpOnly: true,
+//       secure: true,
+//       sameSite: "none",
+//     })
+//     .cookie("refresh_token", null, {
+//       expires: new Date(Date.now()),
+//       httpOnly: true,
+//       secure: true,
+//       sameSite: "none",
+//     })
+//     .json({
+//       success: true,
+//       message: "logout Successfully",
+//     });
+// });
+
+
 exports.logout = catchAsyncError(async (req, res, next) => {
-  if (!req.cookies.token) {
+  let token;
+
+  // Check if access_token is available in cookies
+  if (req.cookies && req.cookies.access_token) {
+    token = req.cookies.access_token;
+  }
+
+  // If access_token is not found in cookies, check in request headers
+  if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    // Extract token from authorization header
+    token = req.headers.authorization.split(' ')[1];
+  } else if (!token && req.headers['x-access-token']) {
+    // Extract token from custom header
+    token = req.headers['x-access-token'];
+  }
+
+  // If neither access_token nor refresh_token are available, return error
+  if (!token && !req.cookies.refresh_token) {
     return next(new ErrorHandler("You are not logged in", 401));
   }
+
+  // Clear cookies and send response
   res
     .status(200)
-    .cookie("token", null, {
-      expires: new Date(Date.now()),
+    .clearCookie("access_token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    })
+    .clearCookie("refresh_token", {
       httpOnly: true,
       secure: true,
       sameSite: "none",
     })
     .json({
       success: true,
-      message: "logout Successfully",
+      message: "Logout Successfully",
     });
 });
-
 
 
 exports.addLocationInformation = catchAsyncError(async (req, res, next) => {
@@ -232,56 +405,57 @@ exports.deleteAllUsers = catchAsyncError(async (req, res, next) => {
   });
 });
 
-
 exports.forgetPassword = catchAsyncError(async (req, res, next) => {
-  const {email} = req.body;
-  const user = await User.findOne({email});
-  if(!user){
-    return next(new ErrorHandler("user not found", 400))
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    return next(new ErrorHandler("user not found", 400));
   }
   const resetToken = await user.getResetToken();
   await user.save();
-  const url = `${process.env.FRONTEND_CONSUMER_URL}/resetpassword/${resetToken}`
-  const message = `Click on the link to reset your password. ${url}, if you have not request then please ignore`
+  const url = `${process.env.FRONTEND_CONSUMER_URL}/resetpassword/${resetToken}`;
+  const message = `Click on the link to reset your password. ${url}, if you have not request then please ignore`;
   const mailOptions = {
     to: user.email,
-    subject: 'Reset Password',
-    text: message
+    subject: "Reset Password",
+    text: message,
   };
   const transporter = createTransporter();
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
-      console.log('Error sending email:', error);
+      console.log("Error sending email:", error);
     } else {
-      console.log('Email sent:', info.response);
+      console.log("Email sent:", info.response);
     }
   });
   res.status(200).json({
     success: true,
     url: url,
-    message:`Reset token has been sent to ${user.email}`
-})
-
-})
+    message: `Reset token has been sent to ${user.email}`,
+  });
+});
 
 exports.resetPassword = catchAsyncError(async (req, res, next) => {
-  const {token} = req.params;
-  const resetPasswordToken = crypto.createHash("sha256").update(token).digest("hex");
+  const { token } = req.params;
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
   const user = await User.findOne({
-      resetPasswordToken,
-      resetPasswordExpire:{
-          $gt:Date.now()
-      }
-  })
-  if(!user){
-      return next(new ErrorHandler("Token is invalid or has been expired"))
+    resetPasswordToken,
+    resetPasswordExpire: {
+      $gt: Date.now(),
+    },
+  });
+  if (!user) {
+    return next(new ErrorHandler("Token is invalid or has been expired"));
   }
   user.password = req.body.password;
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;
   await user.save();
   res.status(200).json({
-      success: true,
-      message:"Password changed sucessfully"
-  })
-})
+    success: true,
+    message: "Password changed sucessfully",
+  });
+});
